@@ -6,11 +6,8 @@ Hybrid Expert-LLM Tutor for Accurate Self-Learning Support in Computer Science
 Author: Arise Steven Samuel
 
 Design:
-    Theme          : Gemini-inspired — deep navy dark background with
-                     soft purple-to-blue gradient accents
-    Display font   : Syne (headings, labels)
-    Body font      : Inter (chat, descriptions)
-    Monospace font : JetBrains Mono (trace panel, rule IDs)
+    Theme  : Clean minimal — dark background, white text, ChatGPT-style
+    Font   : Inter throughout
 """
 
 import compat  # must be first — patches collections for Python 3.10+
@@ -29,414 +26,367 @@ st.set_page_config(
 )
 
 # =============================================================================
-# CUSTOM CSS — Gemini-style Theme
+# CUSTOM CSS
 # =============================================================================
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
-/* ── GLOBAL ── */
-html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif;
-    background-color: #0D0F1A;
-    color: #E2E8F8;
+/* ── FORCE DARK MODE ON EVERYTHING ── */
+html, body,
+[class*="css"],
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"],
+.main,
+section.main,
+.stApp {
+    background-color: #212121 !important;
+    color: #ECECEC !important;
+    font-family: 'Inter', sans-serif !important;
 }
 
-.stApp {
-    background-color: #0D0F1A;
+/* ── FORCE ALL TEXT WHITE ── */
+p, span, div, label, li, h1, h2, h3, h4, h5, h6,
+.stMarkdown, .stText,
+[data-testid="stMarkdownContainer"] {
+    color: #ECECEC !important;
+    font-family: 'Inter', sans-serif !important;
 }
 
 /* ── HIDE STREAMLIT DEFAULTS ── */
 #MainMenu, footer, header { visibility: hidden; }
+
 .block-container {
-    padding-top: 32px !important;
-    padding-bottom: 32px !important;
-    max-width: 860px !important;
+    padding-top: 40px !important;
+    padding-bottom: 40px !important;
+    max-width: 760px !important;
 }
 
 /* ── SIDEBAR ── */
-[data-testid="stSidebar"] {
-    background-color: #0B0D18 !important;
-    border-right: 1px solid #1E2140 !important;
+[data-testid="stSidebar"],
+[data-testid="stSidebar"] > div,
+[data-testid="stSidebarContent"] {
+    background-color: #171717 !important;
+    border-right: 1px solid #2F2F2F !important;
 }
 
 [data-testid="stSidebar"] .block-container {
-    padding: 24px 20px !important;
+    padding: 24px 16px !important;
     max-width: 100% !important;
 }
 
-/* ── GRADIENT UTILITY ── */
-.gradient-text {
-    background: linear-gradient(90deg, #8B5CF6, #3B82F6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+/* Force sidebar text white */
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] span,
+[data-testid="stSidebar"] div,
+[data-testid="stSidebar"] label {
+    color: #ECECEC !important;
 }
 
-/* ── APP HEADER ── */
-.arise-header {
-    margin-bottom: 28px;
+/* ── SIDEBAR TOGGLE BUTTON ── */
+[data-testid="collapsedControl"] {
+    background-color: #2A2A2A !important;
+    color: #ECECEC !important;
+    border: 1px solid #333 !important;
 }
 
-.arise-logo {
-    font-family: 'Syne', sans-serif;
-    font-size: 28px;
-    font-weight: 800;
-    background: linear-gradient(90deg, #8B5CF6, #3B82F6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: -0.02em;
-    line-height: 1;
+button[kind="header"] {
+    background-color: #2A2A2A !important;
+    color: #ECECEC !important;
 }
 
-.arise-logo span {
-    background: linear-gradient(90deg, #3B82F6, #8B5CF6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    opacity: 0.6;
-}
-
-.arise-tagline {
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    font-weight: 300;
-    color: #4A5070;
-    margin-top: 4px;
-    letter-spacing: 0.02em;
-}
-
-/* ── CHAT MESSAGES ── */
-.msg-wrapper {
-    margin-bottom: 20px;
-    animation: fadeUp 0.3s ease forwards;
-}
-
-@keyframes fadeUp {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-.msg-role {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-    padding-left: 2px;
-}
-
-.msg-role-student { color: #4A5070; }
-.msg-role-tutor {
-    background: linear-gradient(90deg, #8B5CF6, #3B82F6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.msg-bubble {
-    border-radius: 14px;
-    padding: 14px 18px;
-    font-size: 14px;
-    line-height: 1.65;
-    font-weight: 400;
-    border: 1px solid;
-}
-
-.msg-bubble-student {
-    background: #13162A;
-    border-color: #1E2140;
-    color: #B0BAD8;
-    margin-left: 32px;
-}
-
-.msg-bubble-tutor {
-    background: linear-gradient(135deg, rgba(139,92,246,0.06), rgba(59,130,246,0.06));
-    border-color: rgba(139,92,246,0.2);
-    color: #E2E8F8;
-}
-
-/* ── BADGES ── */
-.badge-row {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.badge {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 500;
-    padding: 3px 10px;
-    border-radius: 20px;
-    border: 1px solid;
-    letter-spacing: 0.05em;
-    display: inline-block;
-}
-
-.badge-verified {
-    color: #3B82F6;
-    background: rgba(59,130,246,0.08);
-    border-color: rgba(59,130,246,0.25);
-}
-
-.badge-unverified {
-    color: #F59E0B;
-    background: rgba(245,158,11,0.08);
-    border-color: rgba(245,158,11,0.25);
-}
-
-.badge-topic {
-    color: #8B5CF6;
-    background: rgba(139,92,246,0.08);
-    border-color: rgba(139,92,246,0.2);
-}
-
-/* ── INPUT AREA ── */
+/* ── INPUT ── */
 .stTextInput > div > div > input {
-    background-color: #13162A !important;
-    border: 1px solid #1E2140 !important;
+    background-color: #2A2A2A !important;
+    border: 1px solid #444 !important;
     border-radius: 12px !important;
-    color: #E2E8F8 !important;
+    color: #ECECEC !important;
     font-family: 'Inter', sans-serif !important;
     font-size: 14px !important;
     padding: 12px 16px !important;
-    transition: border-color 0.2s ease !important;
 }
 
 .stTextInput > div > div > input:focus {
-    border-color: rgba(139,92,246,0.5) !important;
-    box-shadow: 0 0 0 3px rgba(139,92,246,0.08) !important;
+    border-color: #666 !important;
+    box-shadow: none !important;
+    outline: none !important;
 }
 
 .stTextInput > div > div > input::placeholder {
-    color: #2A2F50 !important;
+    color: #666 !important;
+}
+
+.stTextInput label {
+    display: none !important;
 }
 
 /* ── BUTTON ── */
 .stButton > button {
-    background: linear-gradient(90deg, #8B5CF6, #3B82F6) !important;
-    color: #fff !important;
+    background-color: #ECECEC !important;
+    color: #111111 !important;
     border: none !important;
     border-radius: 12px !important;
-    font-family: 'Syne', sans-serif !important;
-    font-weight: 700 !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 600 !important;
     font-size: 13px !important;
-    letter-spacing: 0.06em !important;
     padding: 12px 24px !important;
     width: 100% !important;
-    transition: opacity 0.2s ease, transform 0.15s ease !important;
+    transition: opacity 0.2s ease !important;
 }
 
 .stButton > button:hover {
-    opacity: 0.88 !important;
-    transform: translateY(-1px) !important;
+    opacity: 0.85 !important;
+    background-color: #ECECEC !important;
+    color: #111111 !important;
 }
 
-.stButton > button:active {
-    transform: translateY(0px) !important;
+.stButton > button p {
+    color: #111111 !important;
 }
 
-/* ── SIDEBAR ELEMENTS ── */
-.sidebar-section-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: #2A2F50;
-    margin-bottom: 10px;
-    margin-top: 20px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid #1E2140;
-}
-
-.sidebar-logo {
-    font-family: 'Syne', sans-serif;
-    font-size: 20px;
-    font-weight: 800;
-    background: linear-gradient(90deg, #8B5CF6, #3B82F6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: -0.02em;
-    margin-bottom: 2px;
-}
-
-.sidebar-tagline {
-    font-size: 11px;
-    color: #2A2F50;
-    font-weight: 300;
-    margin-bottom: 4px;
-}
-
-.topic-chip {
-    display: inline-block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    padding: 3px 9px;
-    border-radius: 6px;
-    background: #13162A;
-    border: 1px solid #1E2140;
-    color: #3A4268;
-    margin: 3px 3px 3px 0;
-}
-
-.topic-chip-active {
-    background: rgba(139,92,246,0.1);
-    border-color: rgba(139,92,246,0.3);
-    color: #8B5CF6;
-}
-
-/* ── EXPERT SYSTEM TRACE ── */
-.trace-container {
-    background: #090B16;
-    border: 1px solid #1E2140;
-    border-radius: 12px;
-    padding: 14px;
-    margin-top: 4px;
-}
-
-.trace-header-text {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 500;
-    background: linear-gradient(90deg, #8B5CF6, #3B82F6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: 0.1em;
-    margin-bottom: 10px;
-}
-
-.trace-rule-block {
-    background: rgba(139,92,246,0.03);
-    border: 1px solid #1E2140;
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin-bottom: 6px;
-}
-
-.trace-rule-id {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: #8B5CF6;
-    opacity: 0.7;
-    margin-bottom: 4px;
-}
-
-.trace-rule-category {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    padding: 2px 7px;
-    border-radius: 4px;
-    display: inline-block;
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-}
-
-.cat-definition  { background: rgba(59,130,246,0.12);  color: #3B82F6; }
-.cat-property    { background: rgba(139,92,246,0.12);  color: #8B5CF6; }
-.cat-step        { background: rgba(168,85,247,0.12);  color: #A855F7; }
-.cat-error       { background: rgba(239,68,68,0.12);   color: #EF4444; }
-.cat-use_case    { background: rgba(245,158,11,0.12);  color: #F59E0B; }
-
-.trace-rule-desc {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: #6B7AA0;
-    line-height: 1.6;
-    word-break: break-word;
-}
-
-.trace-empty {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: #1E2140;
-    text-align: center;
-    padding: 20px 0;
-}
-
-/* ── EXPANDER OVERRIDE ── */
+/* ── EXPANDER ── */
 [data-testid="stExpander"] {
-    background: #0B0D18 !important;
-    border: 1px solid #1E2140 !important;
-    border-radius: 12px !important;
+    background-color: #1A1A1A !important;
+    border: 1px solid #2F2F2F !important;
+    border-radius: 10px !important;
 }
 
-[data-testid="stExpander"] summary {
-    font-family: 'JetBrains Mono', monospace !important;
-    font-size: 11px !important;
-    color: #8B5CF6 !important;
-    padding: 12px 16px !important;
+[data-testid="stExpander"] summary,
+[data-testid="stExpander"] summary p,
+[data-testid="stExpander"] summary span {
+    color: #888 !important;
+    font-size: 12px !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+[data-testid="stExpander"] svg {
+    fill: #888 !important;
+}
+
+/* ── SPINNER ── */
+.stSpinner > div {
+    border-top-color: #ECECEC !important;
 }
 
 /* ── DIVIDER ── */
 .arise-divider {
     border: none;
-    border-top: 1px solid #1E2140;
-    margin: 20px 0;
+    border-top: 1px solid #2F2F2F;
+    margin: 16px 0;
 }
 
-/* ── STATUS INDICATOR ── */
+/* ── CHAT MESSAGES ── */
+.msg-wrapper {
+    margin-bottom: 28px;
+}
+
+.msg-role {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
+    color: #666 !important;
+    margin-bottom: 6px !important;
+}
+
+.msg-role-tutor {
+    color: #ECECEC !important;
+}
+
+.msg-bubble-student {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #ECECEC !important;
+    padding: 12px 16px;
+    background: #2A2A2A;
+    border-radius: 12px;
+    border: 1px solid #333;
+}
+
+.msg-bubble-tutor {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #ECECEC !important;
+}
+
+/* ── BADGES ── */
+.badge-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.badge {
+    font-size: 10px !important;
+    font-weight: 500 !important;
+    padding: 2px 9px !important;
+    border-radius: 20px !important;
+    border: 1px solid #444 !important;
+    display: inline-block !important;
+    background: #2A2A2A !important;
+}
+
+.badge-verified {
+    color: #ECECEC !important;
+    border-color: #555 !important;
+}
+
+.badge-unverified {
+    color: #888 !important;
+    border-color: #333 !important;
+}
+
+.badge-topic {
+    color: #888 !important;
+    border-color: #333 !important;
+}
+
+/* ── SIDEBAR ELEMENTS ── */
+.sidebar-logo {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #ECECEC !important;
+    letter-spacing: -0.01em !important;
+}
+
+.sidebar-sub {
+    font-size: 11px !important;
+    color: #555 !important;
+}
+
+.sidebar-section-title {
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.1em !important;
+    text-transform: uppercase !important;
+    color: #555 !important;
+    margin-top: 20px !important;
+    margin-bottom: 8px !important;
+}
+
+.topic-chip {
+    display: inline-block;
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 6px;
+    background: #2A2A2A;
+    border: 1px solid #333;
+    color: #888 !important;
+    margin: 2px 2px 2px 0;
+}
+
+.topic-chip-active {
+    background: #333 !important;
+    border-color: #555 !important;
+    color: #ECECEC !important;
+}
+
 .status-dot {
     display: inline-block;
-    width: 7px; height: 7px;
+    width: 6px; height: 6px;
     border-radius: 50%;
-    background: linear-gradient(90deg, #8B5CF6, #3B82F6);
+    background: #555;
     margin-right: 6px;
-    animation: pulse 2.5s infinite;
     vertical-align: middle;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(139,92,246,0.4); }
-    50%       { opacity: 0.7; box-shadow: 0 0 0 5px rgba(139,92,246,0); }
 }
 
 .status-text {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: #2A2F50;
+    font-size: 10px !important;
+    color: #555 !important;
     vertical-align: middle;
 }
 
-/* ── WELCOME SCREEN ── */
-.welcome-container {
-    text-align: center;
-    padding: 60px 20px;
+/* ── TRACE PANEL ── */
+.trace-container {
+    background: #1A1A1A;
+    border: 1px solid #2F2F2F;
+    border-radius: 10px;
+    padding: 12px;
 }
 
-.welcome-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-    background: linear-gradient(90deg, #8B5CF6, #3B82F6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+.trace-header-text {
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    color: #555 !important;
+    margin-bottom: 10px !important;
+}
+
+.trace-rule-block {
+    border: 1px solid #2F2F2F;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    background: #212121;
+}
+
+.trace-rule-id {
+    font-size: 10px !important;
+    color: #ECECEC !important;
+    font-weight: 600 !important;
+    margin-bottom: 4px !important;
+}
+
+.trace-rule-category {
+    font-size: 9px !important;
+    padding: 2px 7px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    margin-bottom: 6px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    background: #2A2A2A !important;
+    border: 1px solid #333 !important;
+    color: #888 !important;
+}
+
+.trace-rule-desc {
+    font-size: 11px !important;
+    color: #888 !important;
+    line-height: 1.6 !important;
+    word-break: break-word !important;
+}
+
+.trace-empty {
+    font-size: 11px !important;
+    color: #444 !important;
+    text-align: center !important;
+    padding: 20px 0 !important;
+}
+
+/* ── WELCOME ── */
+.welcome-container {
+    text-align: center;
+    padding: 80px 20px 40px;
 }
 
 .welcome-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 22px;
-    font-weight: 800;
-    color: #E2E8F8;
-    margin-bottom: 8px;
+    font-size: 26px !important;
+    font-weight: 600 !important;
+    color: #ECECEC !important;
+    margin-bottom: 10px !important;
+    letter-spacing: -0.02em !important;
 }
 
 .welcome-sub {
-    font-size: 14px;
-    color: #4A5070;
-    font-weight: 300;
-    line-height: 1.6;
-    max-width: 480px;
-    margin: 0 auto 24px;
+    font-size: 14px !important;
+    color: #666 !important;
+    font-weight: 300 !important;
+    line-height: 1.7 !important;
+    max-width: 440px !important;
+    margin: 0 auto 28px !important;
+}
+
+.welcome-chip {
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 8px;
+    background: #2A2A2A;
+    border: 1px solid #333;
+    color: #666 !important;
 }
 
 .welcome-chip-row {
@@ -444,25 +394,15 @@ html, body, [class*="css"] {
     flex-wrap: wrap;
     gap: 8px;
     justify-content: center;
-    max-width: 520px;
+    max-width: 500px;
     margin: 0 auto;
-}
-
-.welcome-chip {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    padding: 5px 12px;
-    border-radius: 8px;
-    background: #13162A;
-    border: 1px solid #1E2140;
-    color: #3A4268;
 }
 </style>
 """, unsafe_allow_html=True)
 
 
 # =============================================================================
-# SESSION STATE INITIALISATION
+# SESSION STATE
 # =============================================================================
 
 if "messages" not in st.session_state:
@@ -485,27 +425,21 @@ if "last_grounded" not in st.session_state:
 with st.sidebar:
 
     st.markdown("""
-    <div class="sidebar-logo">✦ ARISE</div>
-    <div class="sidebar-tagline">Hybrid Expert-LLM Tutor</div>
+    <div class="sidebar-logo">ARISE Tutor</div>
+    <div class="sidebar-sub">Hybrid Expert-LLM · CS Education</div>
     """, unsafe_allow_html=True)
 
     st.markdown('<hr class="arise-divider">', unsafe_allow_html=True)
 
     st.markdown("""
     <span class="status-dot"></span>
-    <span class="status-text">SYSTEM ONLINE · Expert Engine Active</span>
+    <span class="status-text">Expert Engine Active</span>
     """, unsafe_allow_html=True)
 
-    st.markdown('<div class="sidebar-section-title">Knowledge Domain</div>', unsafe_allow_html=True)
-    st.markdown("""
-    <div style="font-size:12px; color:#2A2F50; font-weight:300; margin-bottom:10px;">
-        Python Programming & Data Structures
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-section-title">Supported Topics</div>',
+                unsafe_allow_html=True)
 
-    st.markdown('<div class="sidebar-section-title">Supported Topics</div>', unsafe_allow_html=True)
-
-    topic_html = '<div style="line-height:2;">'
+    topic_html = '<div style="line-height:2.2;">'
     for topic in SUPPORTED_TOPICS:
         label = topic.replace("_", " ").title()
         is_active = (topic == st.session_state.last_topic)
@@ -516,15 +450,15 @@ with st.sidebar:
 
     st.markdown('<hr class="arise-divider">', unsafe_allow_html=True)
 
-    # Expert System Trace Panel
-    st.markdown('<div class="sidebar-section-title">Expert System Trace</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-section-title">Expert System Trace</div>',
+                unsafe_allow_html=True)
 
-    with st.expander("▸ View Fired Rules", expanded=False):
+    with st.expander("View fired rules", expanded=False):
         if st.session_state.last_expert_facts:
             topic_display = (st.session_state.last_topic or "").replace("_", " ").upper()
             st.markdown(f"""
             <div class="trace-container">
-                <div class="trace-header-text">● RULES FIRED — {topic_display}</div>
+                <div class="trace-header-text">Rules fired — {topic_display}</div>
             """, unsafe_allow_html=True)
 
             for fact in st.session_state.last_expert_facts:
@@ -532,7 +466,7 @@ with st.sidebar:
                 st.markdown(f"""
                 <div class="trace-rule-block">
                     <div class="trace-rule-id">{fact.get('rule_id', '')}</div>
-                    <span class="trace-rule-category cat-{category}">{category}</span>
+                    <span class="trace-rule-category">{category}</span>
                     <div class="trace-rule-desc">{fact.get('description', '')}</div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -542,14 +476,14 @@ with st.sidebar:
             st.markdown("""
             <div class="trace-container">
                 <div class="trace-empty">
-                    No rules fired yet.<br/>Ask a question to activate the engine.
+                    No rules fired yet.<br/>Ask a question to begin.
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
     st.markdown('<hr class="arise-divider">', unsafe_allow_html=True)
 
-    if st.button("⟳  Clear Conversation"):
+    if st.button("Clear conversation"):
         st.session_state.messages = []
         st.session_state.last_expert_facts = []
         st.session_state.last_topic = None
@@ -557,23 +491,25 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("""
-    <div style="margin-top:24px; font-family:'JetBrains Mono',monospace;
-                font-size:9px; color:#1A1E36; line-height:1.8;">
-        ARISE Tutor · Neuro-Symbolic AI<br/>
-        Landmark University · CS Dept<br/>
-        Arise Steven Samuel
+    <div style="margin-top:24px; font-size:10px; color:#333; line-height:1.8;">
+        Arise Steven Samuel<br/>
+        Landmark University · CS Dept
     </div>
     """, unsafe_allow_html=True)
 
 
 # =============================================================================
-# MAIN CHAT AREA
+# MAIN AREA
 # =============================================================================
 
 st.markdown("""
-<div class="arise-header">
-    <div class="arise-logo">✦ ARISE <span>Tutor</span></div>
-    <div class="arise-tagline">Neuro-Symbolic AI · Verified Knowledge · Python & Data Structures</div>
+<div class="arise-header" style="margin-bottom:24px;">
+    <div style="font-size:20px; font-weight:600; color:#ECECEC; letter-spacing:-0.02em;">
+        ARISE Tutor
+    </div>
+    <div style="font-size:13px; font-weight:300; color:#555; margin-top:3px;">
+        Python Programming & Data Structures · Verified by Expert System
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -587,17 +523,16 @@ if not st.session_state.messages:
     )
     st.markdown(f"""
     <div class="welcome-container">
-        <div class="welcome-icon">✦</div>
-        <div class="welcome-title">Ask anything about CS</div>
+        <div class="welcome-title">What can I help you learn?</div>
         <div class="welcome-sub">
-            ARISE Tutor combines a Rule-Based Expert System with a Large Language Model
-            to give you accurate, verified answers — not hallucinations.
+            Ask any question about Python or Data Structures.
+            Every answer is grounded in verified knowledge — not guesswork.
         </div>
         <div class="welcome-chip-row">{topics_chips}</div>
     </div>
     """, unsafe_allow_html=True)
 
-# Render chat history
+# Chat history
 for msg in st.session_state.messages:
     role = msg["role"]
     content = msg["content"]
@@ -607,15 +542,15 @@ for msg in st.session_state.messages:
     if role == "student":
         st.markdown(f"""
         <div class="msg-wrapper">
-            <div class="msg-role msg-role-student">You</div>
-            <div class="msg-bubble msg-bubble-student">{content}</div>
+            <div class="msg-role">You</div>
+            <div class="msg-bubble-student">{content}</div>
         </div>
         """, unsafe_allow_html=True)
     else:
         badge_verified = (
-            '<span class="badge badge-verified">✓ Verified by Expert System</span>'
+            '<span class="badge badge-verified">✓ Verified</span>'
             if grounded else
-            '<span class="badge badge-unverified">⚠ Unverified — cross-check advised</span>'
+            '<span class="badge badge-unverified">⚠ Unverified</span>'
         )
         badge_topic = (
             f'<span class="badge badge-topic">{topic.replace("_", " ")}</span>'
@@ -624,12 +559,12 @@ for msg in st.session_state.messages:
         st.markdown(f"""
         <div class="msg-wrapper">
             <div class="msg-role msg-role-tutor">ARISE Tutor</div>
-            <div class="msg-bubble msg-bubble-tutor">{content}</div>
+            <div class="msg-bubble-tutor">{content}</div>
             <div class="badge-row">{badge_verified}{badge_topic}</div>
         </div>
         """, unsafe_allow_html=True)
 
-# Input area
+# Input
 st.markdown('<hr class="arise-divider">', unsafe_allow_html=True)
 
 col1, col2 = st.columns([5, 1])
@@ -643,7 +578,7 @@ with col1:
     )
 
 with col2:
-    send = st.button("Ask →")
+    send = st.button("Send")
 
 # =============================================================================
 # QUERY HANDLING
@@ -658,11 +593,11 @@ if send and user_input.strip():
         "content": query,
     })
 
-    with st.spinner(""):
+    with st.spinner("Thinking..."):
         result = get_tutor_response(query)
 
     if result["error"]:
-        response_text = f"⚠ An error occurred: {result['error']}"
+        response_text = f"An error occurred: {result['error']}"
         grounded = False
         topic = "unknown"
         facts = []

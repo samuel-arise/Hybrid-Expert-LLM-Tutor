@@ -140,7 +140,7 @@ def get_llm_response(prompt: str) -> str:
         )
 
     client = InferenceClient(
-        model="meta-llama/Llama-3.2-3B-Instruct",
+        model="Qwen/Qwen2.5-72B-Instruct",
         token=token,
         timeout=60
     )
@@ -149,8 +149,8 @@ def get_llm_response(prompt: str) -> str:
         messages=[
             {"role": "user", "content": prompt}
         ],
-        max_tokens = 700,
-        temperature = 0.3,
+        max_tokens=700,
+        temperature=0.3,
     )
 
     content = response.choices[0].message.content
