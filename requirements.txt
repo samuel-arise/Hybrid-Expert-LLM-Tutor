@@ -1,0 +1,49 @@
+# =============================================================================
+# requirements.txt
+# Hybrid Expert-LLM Tutor — Arise Steven Samuel
+# Python 3.10+ | CPU only | HuggingFace Inference API
+#
+# Installation:
+#     pip install -r requirements.txt
+#
+# NOTE: experta requires frozendict==1.2 specifically.
+#       Higher versions of frozendict break the Rete engine.
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# 1. EXPERT SYSTEM (Symbolic Reasoning Layer)
+# -----------------------------------------------------------------------------
+experta==1.9.4
+frozendict==1.2          # experta hard-dependency — do NOT upgrade
+
+
+# -----------------------------------------------------------------------------
+# 2. ORCHESTRATION (LangChain Middleware)
+# -----------------------------------------------------------------------------
+langchain==0.2.16
+langchain-community==0.2.16
+langchain-huggingface==0.0.3
+
+
+# -----------------------------------------------------------------------------
+# 3. LLM ENGINE (HuggingFace Inference API — no local GPU needed)
+# -----------------------------------------------------------------------------
+huggingface-hub==0.24.6
+transformers==4.44.2
+tokenizers==0.19.1
+sentencepiece==0.2.0
+protobuf==4.25.4
+
+
+# -----------------------------------------------------------------------------
+# 4. FRONTEND (Streamlit UI)
+# -----------------------------------------------------------------------------
+streamlit==1.37.1
+
+
+# -----------------------------------------------------------------------------
+# 5. ENVIRONMENT & UTILITIES
+# -----------------------------------------------------------------------------
+python-dotenv==1.0.1     # loads HF_TOKEN from .env file
+requests==2.32.3         # HTTP calls to HuggingFace Inference API

@@ -1,0 +1,7 @@
+{
+    "reportMissingModuleSource": "none",
+    "reportMissingImports": "none",
+    "reportUndefinedVariable": "none",
+    "reportAttributeAccessIssue": "none",
+    "reportOperatorIssue": "none"
+}
