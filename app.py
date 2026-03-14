@@ -5,16 +5,12 @@ User Interface Layer — Streamlit Frontend
 Hybrid Expert-LLM Tutor for Accurate Self-Learning Support in Computer Science
 Author: Arise Steven Samuel
 
-Architecture Role:
-    This module implements Layer 1 of the Hybrid Architecture described in Chapter 3.
-    It captures student queries, displays verified responses, and exposes the
-    Expert System Trace panel in the sidebar for transparency and evaluation.
-
 Design:
-    Colour scheme  : Emerald Green (#00C896) on deep dark backgrounds
+    Theme          : Gemini-inspired — deep navy dark background with
+                     soft purple-to-blue gradient accents
     Display font   : Syne (headings, labels)
     Body font      : Inter (chat, descriptions)
-    Monospace font : JetBrains Mono (trace panel, rule IDs, code)
+    Monospace font : JetBrains Mono (trace panel, rule IDs)
 """
 
 import compat  # must be first — patches collections for Python 3.10+
@@ -23,19 +19,17 @@ from orchestrator import get_tutor_response, SUPPORTED_TOPICS
 
 # =============================================================================
 # PAGE CONFIGURATION
-# Must be the first Streamlit call in the script.
 # =============================================================================
 
 st.set_page_config(
     page_title="ARISE Tutor",
-    page_icon="⬡",
+    page_icon="✦",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
 # =============================================================================
-# CUSTOM CSS
-# Injects Emerald Green theme, Google Fonts, and all component styles.
+# CUSTOM CSS — Gemini-style Theme
 # =============================================================================
 
 st.markdown("""
@@ -45,12 +39,12 @@ st.markdown("""
 /* ── GLOBAL ── */
 html, body, [class*="css"] {
     font-family: 'Inter', sans-serif;
-    background-color: #0A0F0D;
-    color: #E4F0EB;
+    background-color: #0D0F1A;
+    color: #E2E8F8;
 }
 
 .stApp {
-    background-color: #0A0F0D;
+    background-color: #0D0F1A;
 }
 
 /* ── HIDE STREAMLIT DEFAULTS ── */
@@ -63,8 +57,8 @@ html, body, [class*="css"] {
 
 /* ── SIDEBAR ── */
 [data-testid="stSidebar"] {
-    background-color: #0D1410 !important;
-    border-right: 1px solid #1A2B1E !important;
+    background-color: #0B0D18 !important;
+    border-right: 1px solid #1E2140 !important;
 }
 
 [data-testid="stSidebar"] .block-container {
@@ -72,30 +66,44 @@ html, body, [class*="css"] {
     max-width: 100% !important;
 }
 
+/* ── GRADIENT UTILITY ── */
+.gradient-text {
+    background: linear-gradient(90deg, #8B5CF6, #3B82F6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
 /* ── APP HEADER ── */
 .arise-header {
-    margin-bottom: 32px;
+    margin-bottom: 28px;
 }
 
 .arise-logo {
     font-family: 'Syne', sans-serif;
     font-size: 28px;
     font-weight: 800;
-    color: #00C896;
+    background: linear-gradient(90deg, #8B5CF6, #3B82F6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     letter-spacing: -0.02em;
     line-height: 1;
 }
 
 .arise-logo span {
-    color: #E4F0EB;
-    opacity: 0.4;
+    background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0.6;
 }
 
 .arise-tagline {
     font-family: 'Inter', sans-serif;
     font-size: 13px;
     font-weight: 300;
-    color: #5A7065;
+    color: #4A5070;
     margin-top: 4px;
     letter-spacing: 0.02em;
 }
@@ -121,8 +129,13 @@ html, body, [class*="css"] {
     padding-left: 2px;
 }
 
-.msg-role-student { color: #5A7065; }
-.msg-role-tutor   { color: #00C896; }
+.msg-role-student { color: #4A5070; }
+.msg-role-tutor {
+    background: linear-gradient(90deg, #8B5CF6, #3B82F6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
 
 .msg-bubble {
     border-radius: 14px;
@@ -134,16 +147,16 @@ html, body, [class*="css"] {
 }
 
 .msg-bubble-student {
-    background: #111812;
-    border-color: #1A2B1E;
-    color: #C8DDD4;
+    background: #13162A;
+    border-color: #1E2140;
+    color: #B0BAD8;
     margin-left: 32px;
 }
 
 .msg-bubble-tutor {
-    background: rgba(0, 200, 150, 0.05);
-    border-color: rgba(0, 200, 150, 0.15);
-    color: #E4F0EB;
+    background: linear-gradient(135deg, rgba(139,92,246,0.06), rgba(59,130,246,0.06));
+    border-color: rgba(139,92,246,0.2);
+    color: #E2E8F8;
 }
 
 /* ── BADGES ── */
@@ -151,7 +164,6 @@ html, body, [class*="css"] {
     display: flex;
     gap: 8px;
     margin-top: 10px;
-    margin-bottom: 2px;
     flex-wrap: wrap;
     align-items: center;
 }
@@ -168,29 +180,29 @@ html, body, [class*="css"] {
 }
 
 .badge-verified {
-    color: #00C896;
-    background: rgba(0, 200, 150, 0.08);
-    border-color: rgba(0, 200, 150, 0.25);
+    color: #3B82F6;
+    background: rgba(59,130,246,0.08);
+    border-color: rgba(59,130,246,0.25);
 }
 
 .badge-unverified {
     color: #F59E0B;
-    background: rgba(245, 158, 11, 0.08);
-    border-color: rgba(245, 158, 11, 0.25);
+    background: rgba(245,158,11,0.08);
+    border-color: rgba(245,158,11,0.25);
 }
 
 .badge-topic {
-    color: #6ECFB0;
-    background: rgba(0, 200, 150, 0.05);
-    border-color: rgba(0, 200, 150, 0.15);
+    color: #8B5CF6;
+    background: rgba(139,92,246,0.08);
+    border-color: rgba(139,92,246,0.2);
 }
 
 /* ── INPUT AREA ── */
 .stTextInput > div > div > input {
-    background-color: #111812 !important;
-    border: 1px solid #1A2B1E !important;
+    background-color: #13162A !important;
+    border: 1px solid #1E2140 !important;
     border-radius: 12px !important;
-    color: #E4F0EB !important;
+    color: #E2E8F8 !important;
     font-family: 'Inter', sans-serif !important;
     font-size: 14px !important;
     padding: 12px 16px !important;
@@ -198,18 +210,18 @@ html, body, [class*="css"] {
 }
 
 .stTextInput > div > div > input:focus {
-    border-color: rgba(0, 200, 150, 0.5) !important;
-    box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.08) !important;
+    border-color: rgba(139,92,246,0.5) !important;
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.08) !important;
 }
 
 .stTextInput > div > div > input::placeholder {
-    color: #3A5045 !important;
+    color: #2A2F50 !important;
 }
 
 /* ── BUTTON ── */
 .stButton > button {
-    background: #00C896 !important;
-    color: #0A0F0D !important;
+    background: linear-gradient(90deg, #8B5CF6, #3B82F6) !important;
+    color: #fff !important;
     border: none !important;
     border-radius: 12px !important;
     font-family: 'Syne', sans-serif !important;
@@ -237,25 +249,28 @@ html, body, [class*="css"] {
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: #3A5045;
+    color: #2A2F50;
     margin-bottom: 10px;
     margin-top: 20px;
     padding-bottom: 6px;
-    border-bottom: 1px solid #1A2B1E;
+    border-bottom: 1px solid #1E2140;
 }
 
 .sidebar-logo {
     font-family: 'Syne', sans-serif;
     font-size: 20px;
     font-weight: 800;
-    color: #00C896;
+    background: linear-gradient(90deg, #8B5CF6, #3B82F6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     letter-spacing: -0.02em;
     margin-bottom: 2px;
 }
 
 .sidebar-tagline {
     font-size: 11px;
-    color: #3A5045;
+    color: #2A2F50;
     font-weight: 300;
     margin-bottom: 4px;
 }
@@ -266,22 +281,22 @@ html, body, [class*="css"] {
     font-size: 10px;
     padding: 3px 9px;
     border-radius: 6px;
-    background: #111812;
-    border: 1px solid #1A2B1E;
-    color: #5A8070;
+    background: #13162A;
+    border: 1px solid #1E2140;
+    color: #3A4268;
     margin: 3px 3px 3px 0;
 }
 
 .topic-chip-active {
-    background: rgba(0, 200, 150, 0.08);
-    border-color: rgba(0, 200, 150, 0.2);
-    color: #00C896;
+    background: rgba(139,92,246,0.1);
+    border-color: rgba(139,92,246,0.3);
+    color: #8B5CF6;
 }
 
 /* ── EXPERT SYSTEM TRACE ── */
 .trace-container {
-    background: #070D09;
-    border: 1px solid #1A2B1E;
+    background: #090B16;
+    border: 1px solid #1E2140;
     border-radius: 12px;
     padding: 14px;
     margin-top: 4px;
@@ -291,17 +306,17 @@ html, body, [class*="css"] {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     font-weight: 500;
-    color: #00C896;
+    background: linear-gradient(90deg, #8B5CF6, #3B82F6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     letter-spacing: 0.1em;
     margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
 }
 
 .trace-rule-block {
-    background: rgba(0, 200, 150, 0.03);
-    border: 1px solid #1A2B1E;
+    background: rgba(139,92,246,0.03);
+    border: 1px solid #1E2140;
     border-radius: 8px;
     padding: 10px 12px;
     margin-bottom: 6px;
@@ -310,7 +325,7 @@ html, body, [class*="css"] {
 .trace-rule-id {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    color: #00C896;
+    color: #8B5CF6;
     opacity: 0.7;
     margin-bottom: 4px;
 }
@@ -326,8 +341,8 @@ html, body, [class*="css"] {
     letter-spacing: 0.08em;
 }
 
-.cat-definition  { background: rgba(79,142,247,0.12);  color: #4F8EF7; }
-.cat-property    { background: rgba(0,200,150,0.12);   color: #00C896; }
+.cat-definition  { background: rgba(59,130,246,0.12);  color: #3B82F6; }
+.cat-property    { background: rgba(139,92,246,0.12);  color: #8B5CF6; }
 .cat-step        { background: rgba(168,85,247,0.12);  color: #A855F7; }
 .cat-error       { background: rgba(239,68,68,0.12);   color: #EF4444; }
 .cat-use_case    { background: rgba(245,158,11,0.12);  color: #F59E0B; }
@@ -335,7 +350,7 @@ html, body, [class*="css"] {
 .trace-rule-desc {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    color: #6ECFB0;
+    color: #6B7AA0;
     line-height: 1.6;
     word-break: break-word;
 }
@@ -343,29 +358,29 @@ html, body, [class*="css"] {
 .trace-empty {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
-    color: #2A4035;
+    color: #1E2140;
     text-align: center;
     padding: 20px 0;
 }
 
 /* ── EXPANDER OVERRIDE ── */
 [data-testid="stExpander"] {
-    background: #0D1410 !important;
-    border: 1px solid #1A2B1E !important;
+    background: #0B0D18 !important;
+    border: 1px solid #1E2140 !important;
     border-radius: 12px !important;
 }
 
 [data-testid="stExpander"] summary {
     font-family: 'JetBrains Mono', monospace !important;
     font-size: 11px !important;
-    color: #00C896 !important;
+    color: #8B5CF6 !important;
     padding: 12px 16px !important;
 }
 
 /* ── DIVIDER ── */
 .arise-divider {
     border: none;
-    border-top: 1px solid #1A2B1E;
+    border-top: 1px solid #1E2140;
     margin: 20px 0;
 }
 
@@ -374,20 +389,21 @@ html, body, [class*="css"] {
     display: inline-block;
     width: 7px; height: 7px;
     border-radius: 50%;
-    background: #00C896;
+    background: linear-gradient(90deg, #8B5CF6, #3B82F6);
     margin-right: 6px;
     animation: pulse 2.5s infinite;
+    vertical-align: middle;
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,200,150,0.4); }
-    50%       { opacity: 0.7; box-shadow: 0 0 0 5px rgba(0,200,150,0); }
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(139,92,246,0.4); }
+    50%       { opacity: 0.7; box-shadow: 0 0 0 5px rgba(139,92,246,0); }
 }
 
 .status-text {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
-    color: #3A7060;
+    color: #2A2F50;
     vertical-align: middle;
 }
 
@@ -400,19 +416,23 @@ html, body, [class*="css"] {
 .welcome-icon {
     font-size: 48px;
     margin-bottom: 16px;
+    background: linear-gradient(90deg, #8B5CF6, #3B82F6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .welcome-title {
     font-family: 'Syne', sans-serif;
     font-size: 22px;
     font-weight: 800;
-    color: #E4F0EB;
+    color: #E2E8F8;
     margin-bottom: 8px;
 }
 
 .welcome-sub {
     font-size: 14px;
-    color: #5A7065;
+    color: #4A5070;
     font-weight: 300;
     line-height: 1.6;
     max-width: 480px;
@@ -433,9 +453,9 @@ html, body, [class*="css"] {
     font-size: 11px;
     padding: 5px 12px;
     border-radius: 8px;
-    background: #111812;
-    border: 1px solid #1A2B1E;
-    color: #5A8070;
+    background: #13162A;
+    border: 1px solid #1E2140;
+    color: #3A4268;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -464,29 +484,25 @@ if "last_grounded" not in st.session_state:
 
 with st.sidebar:
 
-    # Logo
     st.markdown("""
-    <div class="sidebar-logo">⬡ ARISE</div>
+    <div class="sidebar-logo">✦ ARISE</div>
     <div class="sidebar-tagline">Hybrid Expert-LLM Tutor</div>
     """, unsafe_allow_html=True)
 
     st.markdown('<hr class="arise-divider">', unsafe_allow_html=True)
 
-    # Live status
     st.markdown("""
     <span class="status-dot"></span>
     <span class="status-text">SYSTEM ONLINE · Expert Engine Active</span>
     """, unsafe_allow_html=True)
 
     st.markdown('<div class="sidebar-section-title">Knowledge Domain</div>', unsafe_allow_html=True)
-
     st.markdown("""
-    <div style="font-size:12px; color:#3A5045; font-weight:300; margin-bottom:10px;">
+    <div style="font-size:12px; color:#2A2F50; font-weight:300; margin-bottom:10px;">
         Python Programming & Data Structures
     </div>
     """, unsafe_allow_html=True)
 
-    # Supported topics as chips
     st.markdown('<div class="sidebar-section-title">Supported Topics</div>', unsafe_allow_html=True)
 
     topic_html = '<div style="line-height:2;">'
@@ -508,18 +524,15 @@ with st.sidebar:
             topic_display = (st.session_state.last_topic or "").replace("_", " ").upper()
             st.markdown(f"""
             <div class="trace-container">
-                <div class="trace-header-text">
-                    ● RULES FIRED — {topic_display}
-                </div>
+                <div class="trace-header-text">● RULES FIRED — {topic_display}</div>
             """, unsafe_allow_html=True)
 
             for fact in st.session_state.last_expert_facts:
                 category = fact.get("category", "")
-                cat_class = f"cat-{category}"
                 st.markdown(f"""
                 <div class="trace-rule-block">
                     <div class="trace-rule-id">{fact.get('rule_id', '')}</div>
-                    <span class="trace-rule-category {cat_class}">{category}</span>
+                    <span class="trace-rule-category cat-{category}">{category}</span>
                     <div class="trace-rule-desc">{fact.get('description', '')}</div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -536,7 +549,6 @@ with st.sidebar:
 
     st.markdown('<hr class="arise-divider">', unsafe_allow_html=True)
 
-    # Clear chat button
     if st.button("⟳  Clear Conversation"):
         st.session_state.messages = []
         st.session_state.last_expert_facts = []
@@ -544,10 +556,9 @@ with st.sidebar:
         st.session_state.last_grounded = False
         st.rerun()
 
-    # Footer
     st.markdown("""
     <div style="margin-top:24px; font-family:'JetBrains Mono',monospace;
-                font-size:9px; color:#1A3028; line-height:1.8;">
+                font-size:9px; color:#1A1E36; line-height:1.8;">
         ARISE Tutor · Neuro-Symbolic AI<br/>
         Landmark University · CS Dept<br/>
         Arise Steven Samuel
@@ -559,17 +570,16 @@ with st.sidebar:
 # MAIN CHAT AREA
 # =============================================================================
 
-# App header
 st.markdown("""
 <div class="arise-header">
-    <div class="arise-logo">⬡ ARISE <span>Tutor</span></div>
+    <div class="arise-logo">✦ ARISE <span>Tutor</span></div>
     <div class="arise-tagline">Neuro-Symbolic AI · Verified Knowledge · Python & Data Structures</div>
 </div>
 """, unsafe_allow_html=True)
 
 st.markdown('<hr class="arise-divider">', unsafe_allow_html=True)
 
-# Welcome screen — shown when no messages yet
+# Welcome screen
 if not st.session_state.messages:
     topics_chips = "".join(
         f'<span class="welcome-chip">{t.replace("_", " ").title()}</span>'
@@ -577,7 +587,7 @@ if not st.session_state.messages:
     )
     st.markdown(f"""
     <div class="welcome-container">
-        <div class="welcome-icon">⬡</div>
+        <div class="welcome-icon">✦</div>
         <div class="welcome-title">Ask anything about CS</div>
         <div class="welcome-sub">
             ARISE Tutor combines a Rule-Based Expert System with a Large Language Model
@@ -643,13 +653,11 @@ if send and user_input.strip():
 
     query = user_input.strip()
 
-    # Append student message to history
     st.session_state.messages.append({
         "role": "student",
         "content": query,
     })
 
-    # Call orchestrator
     with st.spinner(""):
         result = get_tutor_response(query)
 
@@ -664,7 +672,6 @@ if send and user_input.strip():
         topic = result["topic"]
         facts = result["expert_facts"]
 
-    # Append tutor response to history
     st.session_state.messages.append({
         "role": "tutor",
         "content": response_text,
@@ -672,7 +679,6 @@ if send and user_input.strip():
         "topic": topic,
     })
 
-    # Update sidebar trace state
     st.session_state.last_expert_facts = facts
     st.session_state.last_topic = topic
     st.session_state.last_grounded = grounded

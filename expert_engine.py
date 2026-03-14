@@ -55,16 +55,6 @@ from experta import (
     KnowledgeEngine,
     Fact,
     Rule,
-    Field,
-    AS,
-    MATCH,
-    W,
-    L,
-    P,
-    NOT,
-    AND,
-    OR,
-    DefFacts,
 )
 from typing import Optional
 
