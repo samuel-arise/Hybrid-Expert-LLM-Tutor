@@ -142,7 +142,7 @@ def get_llm_response(prompt: str) -> str:
     client = InferenceClient(
         model="Qwen/Qwen2.5-72B-Instruct",
         token=token,
-        timeout=60
+        timeout=60,
         base_url="https://router.huggingface.co/hf-inference/v1"
     )
 
