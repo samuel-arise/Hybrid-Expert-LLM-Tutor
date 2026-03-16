@@ -5,9 +5,9 @@ User Interface Layer — Streamlit Frontend
 Hybrid Expert-LLM Tutor for Accurate Self-Learning Support in Computer Science
 Author: Arise Steven Samuel
 
-Design:
-    Theme  : Clean minimal — dark background, white text, ChatGPT-style
-    Font   : Inter throughout
+Fixes:
+    - Enter key now submits the query via st.form
+    - Input field clears after each submission via session state key reset
 """
 
 import compat  # must be first — patches collections for Python 3.10+
@@ -76,7 +76,6 @@ p, span, div, label, li, h1, h2, h3, h4, h5, h6,
     max-width: 100% !important;
 }
 
-/* Force sidebar text white */
 [data-testid="stSidebar"] p,
 [data-testid="stSidebar"] span,
 [data-testid="stSidebar"] div,
@@ -84,20 +83,9 @@ p, span, div, label, li, h1, h2, h3, h4, h5, h6,
     color: #ECECEC !important;
 }
 
-/* ── SIDEBAR TOGGLE BUTTON ── */
-[data-testid="collapsedControl"] {
-    background-color: #2A2A2A !important;
-    color: #ECECEC !important;
-    border: 1px solid #333 !important;
-}
-
-button[kind="header"] {
-    background-color: #2A2A2A !important;
-    color: #ECECEC !important;
-}
-
-/* ── INPUT ── */
-.stTextInput > div > div > input {
+/* ── FORM & INPUT ── */
+.stTextInput > div > div > input,
+[data-testid="stTextInput"] input {
     background-color: #2A2A2A !important;
     border: 1px solid #444 !important;
     border-radius: 12px !important;
@@ -121,8 +109,15 @@ button[kind="header"] {
     display: none !important;
 }
 
+/* Hide the form border that Streamlit adds */
+[data-testid="stForm"] {
+    border: none !important;
+    padding: 0 !important;
+}
+
 /* ── BUTTON ── */
-.stButton > button {
+.stButton > button,
+[data-testid="stFormSubmitButton"] > button {
     background-color: #ECECEC !important;
     color: #111111 !important;
     border: none !important;
@@ -135,13 +130,15 @@ button[kind="header"] {
     transition: opacity 0.2s ease !important;
 }
 
-.stButton > button:hover {
+.stButton > button:hover,
+[data-testid="stFormSubmitButton"] > button:hover {
     opacity: 0.85 !important;
     background-color: #ECECEC !important;
     color: #111111 !important;
 }
 
-.stButton > button p {
+.stButton > button p,
+[data-testid="stFormSubmitButton"] > button p {
     color: #111111 !important;
 }
 
@@ -417,6 +414,10 @@ if "last_topic" not in st.session_state:
 if "last_grounded" not in st.session_state:
     st.session_state.last_grounded = False
 
+# Key counter used to reset the input field after submission
+if "input_key" not in st.session_state:
+    st.session_state.input_key = 0
+
 
 # =============================================================================
 # SIDEBAR
@@ -488,6 +489,7 @@ with st.sidebar:
         st.session_state.last_expert_facts = []
         st.session_state.last_topic = None
         st.session_state.last_grounded = False
+        st.session_state.input_key += 1
         st.rerun()
 
     st.markdown("""
@@ -503,7 +505,7 @@ with st.sidebar:
 # =============================================================================
 
 st.markdown("""
-<div class="arise-header" style="margin-bottom:24px;">
+<div style="margin-bottom:24px;">
     <div style="font-size:20px; font-weight:600; color:#ECECEC; letter-spacing:-0.02em;">
         ARISE Tutor
     </div>
@@ -564,21 +566,22 @@ for msg in st.session_state.messages:
         </div>
         """, unsafe_allow_html=True)
 
-# Input
+# =============================================================================
+# INPUT FORM — Enter key submits, field clears after submission
+# =============================================================================
+
 st.markdown('<hr class="arise-divider">', unsafe_allow_html=True)
 
-col1, col2 = st.columns([5, 1])
-
-with col1:
-    user_input = st.text_input(
-        label="query",
-        placeholder="Ask a question about Python or Data Structures...",
-        label_visibility="collapsed",
-        key="user_input"
-    )
-
-with col2:
-    send = st.button("Send")
+with st.form(key=f"query_form_{st.session_state.input_key}", clear_on_submit=True):
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        user_input = st.text_input(
+            label="query",
+            placeholder="Ask a question about Python or Data Structures...",
+            label_visibility="collapsed",
+        )
+    with col2:
+        send = st.form_submit_button("Send")
 
 # =============================================================================
 # QUERY HANDLING
@@ -617,5 +620,8 @@ if send and user_input.strip():
     st.session_state.last_expert_facts = facts
     st.session_state.last_topic = topic
     st.session_state.last_grounded = grounded
+
+    # Increment key to reset the form on next render
+    st.session_state.input_key += 1
 
     st.rerun()
