@@ -17,7 +17,6 @@
 experta==1.9.4
 frozendict==1.2          # experta hard-dependency — do NOT upgrade
 
-
 # -----------------------------------------------------------------------------
 # 2. ORCHESTRATION (LangChain Middleware)
 # -----------------------------------------------------------------------------
@@ -30,10 +29,6 @@ langchain-huggingface==0.0.3
 # 3. LLM ENGINE (HuggingFace Inference API — no local GPU needed)
 # -----------------------------------------------------------------------------
 huggingface-hub==0.24.6
-transformers==4.44.2
-tokenizers==0.19.1
-sentencepiece==0.2.0
-protobuf==4.25.4
 
 
 # -----------------------------------------------------------------------------
