@@ -118,45 +118,27 @@ Supported topics in the knowledge base are:
 # =============================================================================
 
 def get_llm_response(prompt: str) -> str:
-    """
-    Calls the HuggingFace Inference API using chat completions.
-    Uses Llama-3.2-3B-Instruct — confirmed available on the free tier.
+    from groq import Groq
 
-    Args:
-        prompt (str): The fully constructed prompt string with injected facts.
-
-    Returns:
-        str: The LLM's raw text response.
-
-    Raises:
-        EnvironmentError: If HF_TOKEN is missing from .env.
-        Exception: If the API call fails for any reason.
-    """
-    token = os.getenv("HF_TOKEN")
-    if not token:
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
         raise EnvironmentError(
-            "HF_TOKEN not found. Please add your HuggingFace API token "
-            "to your .env file as: HF_TOKEN=hf_your_token_here"
+            "GROQ_API_KEY not found. Please add it to your .env file or Streamlit Secrets."
         )
 
-    client = InferenceClient(
-    base_url="https://router.huggingface.co/hf-inference/v1",
-    token=token,
-)
+    client = Groq(api_key=api_key)
 
     response = client.chat.completions.create(
-    model="Qwen/Qwen2.5-72B-Instruct",
-    messages=[
-        {"role": "user", "content": prompt}
-    ],
-    max_tokens=700,
-    temperature=0.3,
-)
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=700,
+        temperature=0.3,
+    )
 
     content = response.choices[0].message.content
     return content.strip() if content else ""
-
-
 # =============================================================================
 # CORE ORCHESTRATION FUNCTION
 # This is the single function that app.py calls for every student query.

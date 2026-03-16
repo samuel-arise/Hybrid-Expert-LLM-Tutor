@@ -29,6 +29,7 @@ langchain-huggingface==0.0.3
 # 3. LLM ENGINE (HuggingFace Inference API — no local GPU needed)
 # -----------------------------------------------------------------------------
 huggingface-hub==0.24.6
+groq
 
 
 # -----------------------------------------------------------------------------
