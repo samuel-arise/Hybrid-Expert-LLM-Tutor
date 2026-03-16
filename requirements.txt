@@ -1,7 +1,7 @@
 # =============================================================================
 # requirements.txt
 # Hybrid Expert-LLM Tutor — Arise Steven Samuel
-# Python 3.10+ | CPU only | HuggingFace Inference API
+# Python 3.11 | CPU only | HuggingFace Inference API
 #
 # Installation:
 #     pip install -r requirements.txt
@@ -47,3 +47,10 @@ streamlit==1.37.1
 # -----------------------------------------------------------------------------
 python-dotenv==1.0.1     # loads HF_TOKEN from .env file
 requests==2.32.3         # HTTP calls to HuggingFace Inference API
+
+
+# -----------------------------------------------------------------------------
+# 6. BUILD TOOLS (required for Streamlit Cloud compatibility)
+# -----------------------------------------------------------------------------
+setuptools
+wheel
