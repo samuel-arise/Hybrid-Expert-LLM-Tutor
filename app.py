@@ -5,9 +5,15 @@ User Interface Layer — Streamlit Frontend
 Hybrid Expert-LLM Tutor for Accurate Self-Learning Support in Computer Science
 Author: Arise Steven Samuel
 
-Fixes:
-    - Enter key now submits the query via st.form
-    - Input field clears after each submission via session state key reset
+Design Language — inspired by samuelarise.vercel.app:
+    Background    : #0D0D0D deep black
+    Accent        : #7C3AED purple (brand colour)
+    Display font  : Syne — bold, heavy headings
+    Body font     : DM Sans — clean, modern body text
+    Mono font     : JetBrains Mono — trace panel
+    Cards         : Dark surfaces with purple-tinted borders
+    Labels        : Uppercase spaced purple section labels
+    Buttons       : Solid purple primary, dark outline secondary
 """
 
 import compat  # must be first — patches collections for Python 3.10+
@@ -20,59 +26,57 @@ from orchestrator import get_tutor_response, SUPPORTED_TOPICS
 
 st.set_page_config(
     page_title="ARISE Tutor",
-    page_icon="✦",
+    page_icon="◈",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
 # =============================================================================
-# CUSTOM CSS
+# CUSTOM CSS — Samuel Arise Design Language
 # =============================================================================
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* ── FORCE DARK MODE ON EVERYTHING ── */
+/* ── GLOBAL ── */
 html, body,
 [class*="css"],
 [data-testid="stAppViewContainer"],
 [data-testid="stMain"],
-.main,
-section.main,
-.stApp {
-    background-color: #212121 !important;
-    color: #ECECEC !important;
-    font-family: 'Inter', sans-serif !important;
+.main, section.main, .stApp {
+    background-color: #0D0D0D !important;
+    color: #F0EEF8 !important;
+    font-family: 'DM Sans', sans-serif !important;
 }
 
-/* ── FORCE ALL TEXT WHITE ── */
+/* ── FORCE ALL TEXT LIGHT ── */
 p, span, div, label, li, h1, h2, h3, h4, h5, h6,
 .stMarkdown, .stText,
 [data-testid="stMarkdownContainer"] {
-    color: #ECECEC !important;
-    font-family: 'Inter', sans-serif !important;
+    color: #F0EEF8 !important;
+    font-family: 'DM Sans', sans-serif !important;
 }
 
-/* ── HIDE STREAMLIT DEFAULTS ── */
+/* ── HIDE STREAMLIT CHROME ── */
 #MainMenu, footer, header { visibility: hidden; }
 
 .block-container {
     padding-top: 40px !important;
-    padding-bottom: 40px !important;
-    max-width: 760px !important;
+    padding-bottom: 60px !important;
+    max-width: 780px !important;
 }
 
 /* ── SIDEBAR ── */
 [data-testid="stSidebar"],
 [data-testid="stSidebar"] > div,
 [data-testid="stSidebarContent"] {
-    background-color: #171717 !important;
-    border-right: 1px solid #2F2F2F !important;
+    background-color: #0A0A0A !important;
+    border-right: 1px solid #1C1C2E !important;
 }
 
 [data-testid="stSidebar"] .block-container {
-    padding: 24px 16px !important;
+    padding: 28px 20px !important;
     max-width: 100% !important;
 }
 
@@ -80,310 +84,394 @@ p, span, div, label, li, h1, h2, h3, h4, h5, h6,
 [data-testid="stSidebar"] span,
 [data-testid="stSidebar"] div,
 [data-testid="stSidebar"] label {
-    color: #ECECEC !important;
+    color: #F0EEF8 !important;
 }
 
-/* ── FORM & INPUT ── */
+/* ── FORM — removes default Streamlit border ── */
+[data-testid="stForm"] {
+    border: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+/* ── INPUT ── */
 .stTextInput > div > div > input,
 [data-testid="stTextInput"] input {
-    background-color: #2A2A2A !important;
-    border: 1px solid #444 !important;
-    border-radius: 12px !important;
-    color: #ECECEC !important;
-    font-family: 'Inter', sans-serif !important;
+    background-color: #141414 !important;
+    border: 1px solid #2A2040 !important;
+    border-radius: 10px !important;
+    color: #F0EEF8 !important;
+    font-family: 'DM Sans', sans-serif !important;
     font-size: 14px !important;
-    padding: 12px 16px !important;
+    padding: 13px 18px !important;
+    transition: border-color 0.2s ease !important;
 }
 
 .stTextInput > div > div > input:focus {
-    border-color: #666 !important;
-    box-shadow: none !important;
+    border-color: #7C3AED !important;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12) !important;
     outline: none !important;
 }
 
 .stTextInput > div > div > input::placeholder {
-    color: #666 !important;
+    color: #3D3550 !important;
 }
 
-.stTextInput label {
-    display: none !important;
-}
+.stTextInput label { display: none !important; }
 
-/* Hide the form border that Streamlit adds */
-[data-testid="stForm"] {
-    border: none !important;
-    padding: 0 !important;
-}
-
-/* ── BUTTON ── */
+/* ── BUTTONS ── */
 .stButton > button,
 [data-testid="stFormSubmitButton"] > button {
-    background-color: #ECECEC !important;
-    color: #111111 !important;
+    background-color: #7C3AED !important;
+    color: #ffffff !important;
     border: none !important;
-    border-radius: 12px !important;
-    font-family: 'Inter', sans-serif !important;
-    font-weight: 600 !important;
+    border-radius: 10px !important;
+    font-family: 'Syne', sans-serif !important;
+    font-weight: 700 !important;
     font-size: 13px !important;
-    padding: 12px 24px !important;
+    letter-spacing: 0.04em !important;
+    padding: 13px 24px !important;
     width: 100% !important;
-    transition: opacity 0.2s ease !important;
+    transition: background-color 0.2s ease, transform 0.15s ease !important;
 }
 
 .stButton > button:hover,
 [data-testid="stFormSubmitButton"] > button:hover {
-    opacity: 0.85 !important;
-    background-color: #ECECEC !important;
-    color: #111111 !important;
+    background-color: #6D28D9 !important;
+    transform: translateY(-1px) !important;
+    color: #ffffff !important;
 }
 
 .stButton > button p,
 [data-testid="stFormSubmitButton"] > button p {
-    color: #111111 !important;
+    color: #ffffff !important;
 }
 
 /* ── EXPANDER ── */
 [data-testid="stExpander"] {
-    background-color: #1A1A1A !important;
-    border: 1px solid #2F2F2F !important;
+    background-color: #111111 !important;
+    border: 1px solid #1C1C2E !important;
     border-radius: 10px !important;
 }
 
 [data-testid="stExpander"] summary,
 [data-testid="stExpander"] summary p,
 [data-testid="stExpander"] summary span {
-    color: #888 !important;
-    font-size: 12px !important;
-    font-family: 'Inter', sans-serif !important;
+    color: #7C3AED !important;
+    font-size: 11px !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    letter-spacing: 0.05em !important;
 }
 
-[data-testid="stExpander"] svg {
-    fill: #888 !important;
-}
+[data-testid="stExpander"] svg { fill: #7C3AED !important; }
 
 /* ── SPINNER ── */
-.stSpinner > div {
-    border-top-color: #ECECEC !important;
-}
+.stSpinner > div { border-top-color: #7C3AED !important; }
 
 /* ── DIVIDER ── */
 .arise-divider {
     border: none;
-    border-top: 1px solid #2F2F2F;
-    margin: 16px 0;
+    border-top: 1px solid #1C1C2E;
+    margin: 20px 0;
+}
+
+/* ── SECTION LABEL (matches portfolio style) ── */
+.section-label {
+    font-family: 'Syne', sans-serif !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.2em !important;
+    text-transform: uppercase !important;
+    color: #7C3AED !important;
+    margin-bottom: 4px !important;
+}
+
+/* ── APP HEADER ── */
+.app-title {
+    font-family: 'Syne', sans-serif !important;
+    font-size: 28px !important;
+    font-weight: 800 !important;
+    color: #F0EEF8 !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1.1 !important;
+}
+
+.app-title span {
+    color: #7C3AED !important;
+}
+
+.app-tagline {
+    font-family: 'DM Sans', sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 300 !important;
+    color: #4A4060 !important;
+    margin-top: 4px !important;
 }
 
 /* ── CHAT MESSAGES ── */
 .msg-wrapper {
     margin-bottom: 28px;
+    animation: fadeUp 0.25s ease forwards;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 .msg-role {
-    font-size: 11px !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.04em !important;
+    font-family: 'Syne', sans-serif !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.15em !important;
     text-transform: uppercase !important;
-    color: #666 !important;
-    margin-bottom: 6px !important;
+    color: #3D3550 !important;
+    margin-bottom: 7px !important;
 }
 
-.msg-role-tutor {
-    color: #ECECEC !important;
-}
+.msg-role-tutor { color: #7C3AED !important; }
 
 .msg-bubble-student {
     font-size: 14px;
     line-height: 1.7;
-    color: #ECECEC !important;
-    padding: 12px 16px;
-    background: #2A2A2A;
+    color: #C8C2E0 !important;
+    padding: 14px 18px;
+    background: #141414;
     border-radius: 12px;
-    border: 1px solid #333;
+    border: 1px solid #1C1C2E;
+    margin-left: 24px;
 }
 
 .msg-bubble-tutor {
     font-size: 14px;
-    line-height: 1.7;
-    color: #ECECEC !important;
+    line-height: 1.75;
+    color: #F0EEF8 !important;
+    padding: 16px 20px;
+    background: #111118;
+    border-radius: 12px;
+    border: 1px solid #2A2040;
+    border-left: 3px solid #7C3AED;
 }
 
 /* ── BADGES ── */
 .badge-row {
     display: flex;
-    gap: 6px;
+    gap: 7px;
     margin-top: 10px;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .badge {
+    font-family: 'JetBrains Mono', monospace !important;
     font-size: 10px !important;
     font-weight: 500 !important;
-    padding: 2px 9px !important;
-    border-radius: 20px !important;
-    border: 1px solid #444 !important;
+    padding: 3px 10px !important;
+    border-radius: 6px !important;
+    border: 1px solid !important;
     display: inline-block !important;
-    background: #2A2A2A !important;
 }
 
 .badge-verified {
-    color: #ECECEC !important;
-    border-color: #555 !important;
+    color: #A78BFA !important;
+    background: rgba(124, 58, 237, 0.1) !important;
+    border-color: rgba(124, 58, 237, 0.3) !important;
 }
 
 .badge-unverified {
-    color: #888 !important;
-    border-color: #333 !important;
+    color: #F59E0B !important;
+    background: rgba(245, 158, 11, 0.08) !important;
+    border-color: rgba(245, 158, 11, 0.25) !important;
 }
 
 .badge-topic {
-    color: #888 !important;
-    border-color: #333 !important;
+    color: #6D5DAB !important;
+    background: rgba(124, 58, 237, 0.06) !important;
+    border-color: #2A2040 !important;
 }
 
 /* ── SIDEBAR ELEMENTS ── */
 .sidebar-logo {
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    color: #ECECEC !important;
+    font-family: 'Syne', sans-serif !important;
+    font-size: 17px !important;
+    font-weight: 800 !important;
+    color: #F0EEF8 !important;
     letter-spacing: -0.01em !important;
 }
 
+.sidebar-logo span { color: #7C3AED !important; }
+
 .sidebar-sub {
     font-size: 11px !important;
-    color: #555 !important;
+    color: #3D3550 !important;
+    font-weight: 300 !important;
 }
 
 .sidebar-section-title {
-    font-size: 10px !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.1em !important;
+    font-family: 'Syne', sans-serif !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.2em !important;
     text-transform: uppercase !important;
-    color: #555 !important;
-    margin-top: 20px !important;
-    margin-bottom: 8px !important;
+    color: #7C3AED !important;
+    margin-top: 22px !important;
+    margin-bottom: 10px !important;
+    padding-bottom: 6px !important;
+    border-bottom: 1px solid #1C1C2E !important;
 }
 
 .topic-chip {
     display: inline-block;
-    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
     padding: 3px 9px;
     border-radius: 6px;
-    background: #2A2A2A;
-    border: 1px solid #333;
-    color: #888 !important;
+    background: #141414;
+    border: 1px solid #1C1C2E;
+    color: #3D3550 !important;
     margin: 2px 2px 2px 0;
+    transition: all 0.15s ease;
 }
 
 .topic-chip-active {
-    background: #333 !important;
-    border-color: #555 !important;
-    color: #ECECEC !important;
+    background: rgba(124, 58, 237, 0.12) !important;
+    border-color: rgba(124, 58, 237, 0.35) !important;
+    color: #A78BFA !important;
 }
 
 .status-dot {
     display: inline-block;
     width: 6px; height: 6px;
     border-radius: 50%;
-    background: #555;
-    margin-right: 6px;
+    background: #7C3AED;
+    margin-right: 7px;
     vertical-align: middle;
+    animation: pulse 2.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(124,58,237,0.4); }
+    50%       { opacity: 0.7; box-shadow: 0 0 0 5px rgba(124,58,237,0); }
 }
 
 .status-text {
+    font-family: 'JetBrains Mono', monospace !important;
     font-size: 10px !important;
-    color: #555 !important;
+    color: #3D3550 !important;
     vertical-align: middle;
 }
 
 /* ── TRACE PANEL ── */
 .trace-container {
-    background: #1A1A1A;
-    border: 1px solid #2F2F2F;
+    background: #0A0A0A;
+    border: 1px solid #1C1C2E;
     border-radius: 10px;
-    padding: 12px;
+    padding: 14px;
 }
 
 .trace-header-text {
-    font-size: 10px !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.08em !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 9px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.12em !important;
     text-transform: uppercase !important;
-    color: #555 !important;
+    color: #7C3AED !important;
     margin-bottom: 10px !important;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .trace-rule-block {
-    border: 1px solid #2F2F2F;
+    border: 1px solid #1C1C2E;
     border-radius: 8px;
     padding: 10px 12px;
     margin-bottom: 6px;
-    background: #212121;
+    background: #0D0D0D;
+    border-left: 2px solid #7C3AED;
 }
 
 .trace-rule-id {
+    font-family: 'JetBrains Mono', monospace !important;
     font-size: 10px !important;
-    color: #ECECEC !important;
+    color: #A78BFA !important;
     font-weight: 600 !important;
     margin-bottom: 4px !important;
 }
 
 .trace-rule-category {
+    font-family: 'JetBrains Mono', monospace !important;
     font-size: 9px !important;
     padding: 2px 7px !important;
     border-radius: 4px !important;
     display: inline-block !important;
     margin-bottom: 6px !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.06em !important;
-    background: #2A2A2A !important;
-    border: 1px solid #333 !important;
-    color: #888 !important;
+    letter-spacing: 0.08em !important;
+    background: rgba(124,58,237,0.1) !important;
+    border: 1px solid rgba(124,58,237,0.2) !important;
+    color: #A78BFA !important;
 }
 
 .trace-rule-desc {
-    font-size: 11px !important;
-    color: #888 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 10px !important;
+    color: #4A4060 !important;
     line-height: 1.6 !important;
     word-break: break-word !important;
 }
 
 .trace-empty {
+    font-family: 'JetBrains Mono', monospace !important;
     font-size: 11px !important;
-    color: #444 !important;
+    color: #1C1C2E !important;
     text-align: center !important;
-    padding: 20px 0 !important;
+    padding: 24px 0 !important;
 }
 
 /* ── WELCOME ── */
 .welcome-container {
     text-align: center;
-    padding: 80px 20px 40px;
+    padding: 70px 20px 40px;
+}
+
+.welcome-label {
+    font-family: 'Syne', sans-serif !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.2em !important;
+    text-transform: uppercase !important;
+    color: #7C3AED !important;
+    margin-bottom: 12px !important;
 }
 
 .welcome-title {
-    font-size: 26px !important;
-    font-weight: 600 !important;
-    color: #ECECEC !important;
-    margin-bottom: 10px !important;
+    font-family: 'Syne', sans-serif !important;
+    font-size: 30px !important;
+    font-weight: 800 !important;
+    color: #F0EEF8 !important;
+    margin-bottom: 12px !important;
     letter-spacing: -0.02em !important;
+    line-height: 1.2 !important;
 }
 
 .welcome-sub {
     font-size: 14px !important;
-    color: #666 !important;
+    color: #4A4060 !important;
     font-weight: 300 !important;
     line-height: 1.7 !important;
-    max-width: 440px !important;
+    max-width: 460px !important;
     margin: 0 auto 28px !important;
 }
 
 .welcome-chip {
-    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
     padding: 5px 12px;
-    border-radius: 8px;
-    background: #2A2A2A;
-    border: 1px solid #333;
-    color: #666 !important;
+    border-radius: 6px;
+    background: #141414;
+    border: 1px solid #1C1C2E;
+    color: #3D3550 !important;
 }
 
 .welcome-chip-row {
@@ -391,7 +479,7 @@ p, span, div, label, li, h1, h2, h3, h4, h5, h6,
     flex-wrap: wrap;
     gap: 8px;
     justify-content: center;
-    max-width: 500px;
+    max-width: 520px;
     margin: 0 auto;
 }
 </style>
@@ -414,7 +502,6 @@ if "last_topic" not in st.session_state:
 if "last_grounded" not in st.session_state:
     st.session_state.last_grounded = False
 
-# Key counter used to reset the input field after submission
 if "input_key" not in st.session_state:
     st.session_state.input_key = 0
 
@@ -426,7 +513,7 @@ if "input_key" not in st.session_state:
 with st.sidebar:
 
     st.markdown("""
-    <div class="sidebar-logo">ARISE Tutor</div>
+    <div class="sidebar-logo">◈ ARISE <span>Tutor</span></div>
     <div class="sidebar-sub">Hybrid Expert-LLM · CS Education</div>
     """, unsafe_allow_html=True)
 
@@ -440,7 +527,7 @@ with st.sidebar:
     st.markdown('<div class="sidebar-section-title">Supported Topics</div>',
                 unsafe_allow_html=True)
 
-    topic_html = '<div style="line-height:2.2;">'
+    topic_html = '<div style="line-height:2.4;">'
     for topic in SUPPORTED_TOPICS:
         label = topic.replace("_", " ").title()
         is_active = (topic == st.session_state.last_topic)
@@ -454,12 +541,12 @@ with st.sidebar:
     st.markdown('<div class="sidebar-section-title">Expert System Trace</div>',
                 unsafe_allow_html=True)
 
-    with st.expander("View fired rules", expanded=False):
+    with st.expander("▸ View fired rules", expanded=False):
         if st.session_state.last_expert_facts:
             topic_display = (st.session_state.last_topic or "").replace("_", " ").upper()
             st.markdown(f"""
             <div class="trace-container">
-                <div class="trace-header-text">Rules fired — {topic_display}</div>
+                <div class="trace-header-text">● Rules fired — {topic_display}</div>
             """, unsafe_allow_html=True)
 
             for fact in st.session_state.last_expert_facts:
@@ -484,7 +571,7 @@ with st.sidebar:
 
     st.markdown('<hr class="arise-divider">', unsafe_allow_html=True)
 
-    if st.button("Clear conversation"):
+    if st.button("↺  Clear Conversation"):
         st.session_state.messages = []
         st.session_state.last_expert_facts = []
         st.session_state.last_topic = None
@@ -493,9 +580,11 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("""
-    <div style="margin-top:24px; font-size:10px; color:#333; line-height:1.8;">
+    <div style="margin-top:28px; font-family:'JetBrains Mono',monospace;
+                font-size:9px; color:#1C1C2E; line-height:2;">
         Arise Steven Samuel<br/>
-        Landmark University · CS Dept
+        Landmark University · CS Dept<br/>
+        Final Year Project · 2025
     </div>
     """, unsafe_allow_html=True)
 
@@ -504,14 +593,12 @@ with st.sidebar:
 # MAIN AREA
 # =============================================================================
 
+# Header
 st.markdown("""
-<div style="margin-bottom:24px;">
-    <div style="font-size:20px; font-weight:600; color:#ECECEC; letter-spacing:-0.02em;">
-        ARISE Tutor
-    </div>
-    <div style="font-size:13px; font-weight:300; color:#555; margin-top:3px;">
-        Python Programming & Data Structures · Verified by Expert System
-    </div>
+<div style="margin-bottom: 28px;">
+    <div class="section-label">Neuro-Symbolic AI · CS Education</div>
+    <div class="app-title">ARISE <span>Tutor</span></div>
+    <div class="app-tagline">Python Programming & Data Structures · Verified by Expert System</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -525,7 +612,8 @@ if not st.session_state.messages:
     )
     st.markdown(f"""
     <div class="welcome-container">
-        <div class="welcome-title">What can I help you learn?</div>
+        <div class="welcome-label">Ask · Learn · Verify</div>
+        <div class="welcome-title">What can I help<br/>you learn today?</div>
         <div class="welcome-sub">
             Ask any question about Python or Data Structures.
             Every answer is grounded in verified knowledge — not guesswork.
@@ -550,9 +638,9 @@ for msg in st.session_state.messages:
         """, unsafe_allow_html=True)
     else:
         badge_verified = (
-            '<span class="badge badge-verified">✓ Verified</span>'
+            '<span class="badge badge-verified">✓ Verified by Expert System</span>'
             if grounded else
-            '<span class="badge badge-unverified">⚠ Unverified</span>'
+            '<span class="badge badge-unverified">⚠ Unverified — cross-check advised</span>'
         )
         badge_topic = (
             f'<span class="badge badge-topic">{topic.replace("_", " ")}</span>'
@@ -567,7 +655,7 @@ for msg in st.session_state.messages:
         """, unsafe_allow_html=True)
 
 # =============================================================================
-# INPUT FORM — Enter key submits, field clears after submission
+# INPUT FORM
 # =============================================================================
 
 st.markdown('<hr class="arise-divider">', unsafe_allow_html=True)
@@ -577,11 +665,11 @@ with st.form(key=f"query_form_{st.session_state.input_key}", clear_on_submit=Tru
     with col1:
         user_input = st.text_input(
             label="query",
-            placeholder="Ask a question about Python or Data Structures...",
+            placeholder="Ask about Python, Data Structures, OOP...",
             label_visibility="collapsed",
         )
     with col2:
-        send = st.form_submit_button("Send")
+        send = st.form_submit_button("Ask →")
 
 # =============================================================================
 # QUERY HANDLING
@@ -596,7 +684,7 @@ if send and user_input.strip():
         "content": query,
     })
 
-    with st.spinner("Thinking..."):
+    with st.spinner(""):
         result = get_tutor_response(query)
 
     if result["error"]:
@@ -620,8 +708,6 @@ if send and user_input.strip():
     st.session_state.last_expert_facts = facts
     st.session_state.last_topic = topic
     st.session_state.last_grounded = grounded
-
-    # Increment key to reset the form on next render
     st.session_state.input_key += 1
 
     st.rerun()
