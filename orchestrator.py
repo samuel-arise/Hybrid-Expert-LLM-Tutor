@@ -112,8 +112,8 @@ Supported topics in the knowledge base are:
 
 # =============================================================================
 # LLM INFERENCE
-# Uses HuggingFace Inference API with chat completions.
-# Llama-3.2-3B-Instruct is actively maintained by Meta on the free tier
+# Uses Groq Inference API with chat completions.
+# llama-3.1-8b-instant intruct is actively maintained by Meta on the free tier
 # and supports the chat completions format natively.
 # =============================================================================
 

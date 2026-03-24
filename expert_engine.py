@@ -14,7 +14,6 @@ Architecture Role:
     Rather than enumerating every possible correct answer, this engine defines the
     CONSTRAINTS that every correct answer must satisfy. The engine validates a query
     against these constraints and returns verified ground-truth facts.
-    This minimises space/time complexity as described in Section 3.2, Point 3.
 
 Domain:
     Python Programming
@@ -31,6 +30,15 @@ Domain:
         - Binary Trees & Binary Search Trees (BST)
         - Hash Tables
 
+    Algorithms
+        - Sorting Algorithms (Bubble, Merge, Quick Sort)
+        - Searching Algorithms (Linear Search, Binary Search)
+        - Big-O Notation & Complexity Analysis
+        - Graph Theory & Graph Algorithms (BFS, DFS)
+
+    Theory of Computation
+        - Automata Theory (DFA, NFA, Finite Automata)
+
 Fact Categories per topic:
     - definition   : what the concept is
     - property     : key characteristics and rules
@@ -44,19 +52,21 @@ Fact Categories per topic:
 # experta uses collections.Callable which was removed in Python 3.10.
 # This patch restores it before experta is imported.
 # -----------------------------------------------------------------------------
-import compat
 import collections
 import collections.abc
 
 if not hasattr(collections, "Callable"):
     collections.Callable = collections.abc.Callable
+if not hasattr(collections, "Mapping"):
+    collections.Mapping = collections.abc.Mapping
+if not hasattr(collections, "MutableMapping"):
+    collections.MutableMapping = collections.abc.MutableMapping
+if not hasattr(collections, "Iterable"):
+    collections.Iterable = collections.abc.Iterable
+if not hasattr(collections, "Iterator"):
+    collections.Iterator = collections.abc.Iterator
 
-from experta import (
-    KnowledgeEngine,
-    Fact,
-    Rule,
-)
-from typing import Optional
+from experta import *
 
 
 # =============================================================================
@@ -92,14 +102,6 @@ class TopicFact(Fact):
 # =============================================================================
 
 class CSKnowledgeEngine(KnowledgeEngine):
-    """
-    Rule-Based Expert System for Python Programming and Data Structures tutoring.
-
-    Constraint-Based Modelling approach:
-        Rules encode the PROPERTIES that define a topic's correctness,
-        not an exhaustive decision tree. This keeps the knowledge base
-        maintainable and extensible.
-    """
 
     # =========================================================================
     # PYTHON PROGRAMMING
@@ -803,6 +805,480 @@ class CSKnowledgeEngine(KnowledgeEngine):
             priority=3
         ))
 
+    # =========================================================================
+    # ALGORITHMS
+    # =========================================================================
+
+    # -------------------------------------------------------------------------
+    # SORTING ALGORITHMS
+    # -------------------------------------------------------------------------
+
+    @Rule(TopicQuery(name="sorting"))
+    def sorting_definition(self):
+        self.declare(TopicFact(
+            topic="sorting",
+            category="definition",
+            rule_id="SORT-DEF-01",
+            description=(
+                "DEFINITION — Sorting is the process of arranging elements in a "
+                "defined order (typically ascending or descending). "
+                "Three fundamental sorting algorithms are: "
+                "Bubble Sort (simple, O(n²)), "
+                "Merge Sort (divide and conquer, O(n log n)), and "
+                "Quick Sort (divide and conquer, O(n log n) average, O(n²) worst case). "
+                "The choice of algorithm depends on dataset size, memory constraints, "
+                "and whether stability is required."
+            ),
+            priority=1
+        ))
+
+    @Rule(TopicQuery(name="sorting"))
+    def sorting_bubble(self):
+        self.declare(TopicFact(
+            topic="sorting",
+            category="step",
+            rule_id="SORT-STEP-01",
+            description=(
+                "BUBBLE SORT — "
+                "Repeatedly compares adjacent pairs and swaps them if out of order. "
+                "After each full pass, the largest unsorted element bubbles to its "
+                "correct position at the end. "
+                "TIME: Best O(n) with early-exit optimisation (already sorted). "
+                "Average & Worst: O(n²). SPACE: O(1) in-place. "
+                "STABILITY: Stable — equal elements preserve their original order. "
+                "OPTIMISATION: Use a 'swapped' flag — if no swap occurs in a full "
+                "pass, the array is already sorted and the algorithm terminates early."
+            ),
+            priority=2
+        ))
+
+    @Rule(TopicQuery(name="sorting"))
+    def sorting_merge(self):
+        self.declare(TopicFact(
+            topic="sorting",
+            category="step",
+            rule_id="SORT-STEP-02",
+            description=(
+                "MERGE SORT — "
+                "Divide and Conquer: recursively splits the array into halves until "
+                "each subarray has one element, then merges them back in sorted order. "
+                "TIME: O(n log n) in ALL cases — best, average, and worst. "
+                "SPACE: O(n) — requires auxiliary arrays during the merge step. "
+                "STABILITY: Stable — equal elements preserve their original order. "
+                "BEST USE: Large datasets, external sorting, when stability is required."
+            ),
+            priority=3
+        ))
+
+    @Rule(TopicQuery(name="sorting"))
+    def sorting_quick(self):
+        self.declare(TopicFact(
+            topic="sorting",
+            category="step",
+            rule_id="SORT-STEP-03",
+            description=(
+                "QUICK SORT — "
+                "Divide and Conquer: selects a pivot, partitions the array so elements "
+                "less than the pivot go left and greater go right, then recurses. "
+                "TIME: Best & Average O(n log n). WORST CASE: O(n²) — occurs when "
+                "the pivot is always the smallest or largest element (e.g. sorted input "
+                "with naive first-element pivot). "
+                "SPACE: O(log n) average for the call stack. "
+                "STABILITY: NOT stable in standard form. "
+                "MITIGATION: Use random pivot or median-of-three pivot selection "
+                "to avoid worst-case degradation."
+            ),
+            priority=4
+        ))
+
+    @Rule(TopicQuery(name="sorting"))
+    def sorting_errors(self):
+        self.declare(TopicFact(
+            topic="sorting",
+            category="error",
+            rule_id="SORT-ERR-01",
+            description=(
+                "COMMON STUDENT ERRORS — "
+                "1. Assuming Quick Sort is always O(n log n) — it degrades to O(n²) "
+                "   on sorted or reverse-sorted input with naive pivot selection. "
+                "2. Confusing Merge Sort space complexity — it requires O(n) auxiliary "
+                "   space, unlike in-place sorts like Bubble Sort. "
+                "3. Assuming Bubble Sort is always O(n²) — with the swapped flag "
+                "   optimisation it achieves O(n) on already-sorted input. "
+                "4. Confusing stability: Merge Sort is stable; Quick Sort is not. "
+                "5. Using Bubble Sort on large datasets — O(n²) is impractical for n > 1000."
+            ),
+            priority=5
+        ))
+
+    # -------------------------------------------------------------------------
+    # SEARCHING ALGORITHMS
+    # -------------------------------------------------------------------------
+
+    @Rule(TopicQuery(name="searching"))
+    def searching_definition(self):
+        self.declare(TopicFact(
+            topic="searching",
+            category="definition",
+            rule_id="SRCH-DEF-01",
+            description=(
+                "DEFINITION — Searching is the process of locating a specific element "
+                "within a data structure. The two fundamental searching algorithms are: "
+                "Linear Search: scans every element sequentially — works on any array. "
+                "Binary Search: repeatedly halves the search space — requires a SORTED "
+                "array. The choice between them depends entirely on whether the data "
+                "is sorted."
+            ),
+            priority=1
+        ))
+
+    @Rule(TopicQuery(name="searching"))
+    def searching_linear(self):
+        self.declare(TopicFact(
+            topic="searching",
+            category="step",
+            rule_id="SRCH-STEP-01",
+            description=(
+                "LINEAR SEARCH — "
+                "Iterates through every element from index 0 to n-1. "
+                "At each index i, compare array[i] to the target. "
+                "If array[i] == target: return i (found). "
+                "If the loop completes without a match: return -1 (not found). "
+                "TIME: Best O(1) — target is first element. Average & Worst O(n). "
+                "SPACE: O(1). No preprocessing required. "
+                "SUITABLE FOR: Unsorted data, small datasets, single searches."
+            ),
+            priority=2
+        ))
+
+    @Rule(TopicQuery(name="searching"))
+    def searching_binary(self):
+        self.declare(TopicFact(
+            topic="searching",
+            category="step",
+            rule_id="SRCH-STEP-02",
+            description=(
+                "BINARY SEARCH — "
+                "HARD PREREQUISITE: The array MUST be sorted before Binary Search "
+                "is applied. Applying it to an unsorted array produces undefined behaviour. "
+                "ALGORITHM: Initialise low=0, high=n-1. While low <= high: "
+                "compute mid = (low + high) // 2. "
+                "If array[mid] == target: return mid. "
+                "If array[mid] < target: set low = mid + 1 (discard left half). "
+                "If array[mid] > target: set high = mid - 1 (discard right half). "
+                "If loop exits: return -1 (not found). "
+                "TIME: Best O(1). Average & Worst O(log n). SPACE: O(1) iterative."
+            ),
+            priority=3
+        ))
+
+    @Rule(TopicQuery(name="searching"))
+    def searching_errors(self):
+        self.declare(TopicFact(
+            topic="searching",
+            category="error",
+            rule_id="SRCH-ERR-01",
+            description=(
+                "COMMON STUDENT ERRORS — "
+                "1. Applying Binary Search to an unsorted array — produces incorrect "
+                "   results without raising an error, making this a silent bug. "
+                "2. Assuming Binary Search is always O(1) — it is O(log n). "
+                "3. Integer overflow in mid calculation: use mid = low + (high - low) // 2 "
+                "   instead of (low + high) // 2 in languages with fixed integer sizes. "
+                "   Python integers do not overflow, but the pattern is good practice. "
+                "4. Off-by-one in boundary conditions: using low < high instead of "
+                "   low <= high causes the algorithm to miss the last element."
+            ),
+            priority=4
+        ))
+
+    # -------------------------------------------------------------------------
+    # BIG-O NOTATION & COMPLEXITY ANALYSIS
+    # -------------------------------------------------------------------------
+
+    @Rule(TopicQuery(name="big_o"))
+    def big_o_definition(self):
+        self.declare(TopicFact(
+            topic="big_o",
+            category="definition",
+            rule_id="BGO-DEF-01",
+            description=(
+                "DEFINITION — Big-O notation describes the upper bound of an "
+                "algorithm's time or space requirements as a function of input size n. "
+                "It characterises worst-case growth rate, ignoring constants and "
+                "lower-order terms. "
+                "Common classes (fastest to slowest): "
+                "O(1) — Constant. O(log n) — Logarithmic. O(n) — Linear. "
+                "O(n log n) — Linearithmic. O(n²) — Quadratic. "
+                "O(2ⁿ) — Exponential. O(n!) — Factorial."
+            ),
+            priority=1
+        ))
+
+    @Rule(TopicQuery(name="big_o"))
+    def big_o_properties(self):
+        self.declare(TopicFact(
+            topic="big_o",
+            category="property",
+            rule_id="BGO-PROP-01",
+            description=(
+                "KEY RULES — "
+                "DROP CONSTANTS: O(2n) simplifies to O(n). "
+                "DROP LOWER-ORDER TERMS: O(n² + n) simplifies to O(n²). "
+                "WORST CASE: Big-O describes the worst case unless stated otherwise. "
+                "SPACE COMPLEXITY: Big-O also applies to memory usage — "
+                "an algorithm that creates an auxiliary array of size n has O(n) space. "
+                "BEST / AVERAGE / WORST: An algorithm may have different complexities "
+                "for each case. Quick Sort is O(n log n) average but O(n²) worst case."
+            ),
+            priority=2
+        ))
+
+    @Rule(TopicQuery(name="big_o"))
+    def big_o_examples(self):
+        self.declare(TopicFact(
+            topic="big_o",
+            category="use_case",
+            rule_id="BGO-USE-01",
+            description=(
+                "COMMON ALGORITHM COMPLEXITIES — "
+                "O(1): array index access, hash table lookup (average). "
+                "O(log n): Binary Search, balanced BST operations. "
+                "O(n): Linear Search, single array traversal. "
+                "O(n log n): Merge Sort, Quick Sort (average), Heap Sort. "
+                "O(n²): Bubble Sort, Selection Sort, Insertion Sort (worst case). "
+                "O(2ⁿ): naive recursive Fibonacci, brute-force subset enumeration. "
+                "RULE OF THUMB: For n = 1,000,000 — O(n log n) is fast; "
+                "O(n²) is too slow for real-time applications."
+            ),
+            priority=3
+        ))
+
+    @Rule(TopicQuery(name="big_o"))
+    def big_o_errors(self):
+        self.declare(TopicFact(
+            topic="big_o",
+            category="error",
+            rule_id="BGO-ERR-01",
+            description=(
+                "COMMON STUDENT ERRORS — "
+                "1. Confusing best-case with worst-case: Binary Search is O(1) best "
+                "   case but O(log n) worst case — stating O(1) without qualification "
+                "   is incorrect. "
+                "2. Not dropping constants: O(3n) is NOT a valid Big-O class — "
+                "   simplify to O(n). "
+                "3. Confusing time complexity with space complexity — an algorithm "
+                "   can be O(n) time but O(1) space (e.g. Linear Search). "
+                "4. Assuming nested loops always mean O(n²) — only true if both "
+                "   loops iterate n times. A loop running log n times inside an "
+                "   n-loop gives O(n log n)."
+            ),
+            priority=4
+        ))
+
+    # -------------------------------------------------------------------------
+    # GRAPH THEORY & ALGORITHMS
+    # -------------------------------------------------------------------------
+
+    @Rule(TopicQuery(name="graphs"))
+    def graphs_definition(self):
+        self.declare(TopicFact(
+            topic="graphs",
+            category="definition",
+            rule_id="GRP-DEF-01",
+            description=(
+                "DEFINITION — A Graph is a non-linear data structure consisting of "
+                "a set of vertices (nodes) connected by edges. "
+                "DIRECTED graph: edges have a direction (A → B does not imply B → A). "
+                "UNDIRECTED graph: edges have no direction (A — B implies both directions). "
+                "WEIGHTED graph: each edge carries a numerical value (weight/cost). "
+                "UNWEIGHTED graph: all edges are equal. "
+                "A graph with no cycles is called a DAG (Directed Acyclic Graph). "
+                "Trees are a special case of graphs — connected, undirected, with no cycles."
+            ),
+            priority=1
+        ))
+
+    @Rule(TopicQuery(name="graphs"))
+    def graphs_representation(self):
+        self.declare(TopicFact(
+            topic="graphs",
+            category="property",
+            rule_id="GRP-PROP-01",
+            description=(
+                "GRAPH REPRESENTATION — "
+                "ADJACENCY MATRIX: a 2D array where matrix[i][j] = 1 if an edge "
+                "exists between vertex i and vertex j. Space: O(V²). "
+                "Best for dense graphs (many edges). "
+                "ADJACENCY LIST: each vertex stores a list of its neighbours. "
+                "Space: O(V + E) where V = vertices, E = edges. "
+                "Best for sparse graphs (few edges). "
+                "In Python, an adjacency list is typically implemented as a "
+                "dictionary of lists: graph = {node: [neighbours]}."
+            ),
+            priority=2
+        ))
+
+    @Rule(TopicQuery(name="graphs"))
+    def graphs_traversals(self):
+        self.declare(TopicFact(
+            topic="graphs",
+            category="step",
+            rule_id="GRP-STEP-01",
+            description=(
+                "GRAPH TRAVERSALS — "
+                "BFS (Breadth-First Search): explores all neighbours at the current "
+                "depth before moving deeper. Uses a QUEUE. "
+                "Time: O(V + E). Finds shortest path in unweighted graphs. "
+                "DFS (Depth-First Search): explores as far as possible along each "
+                "branch before backtracking. Uses a STACK (or recursion). "
+                "Time: O(V + E). Used for cycle detection, topological sorting, "
+                "and connected component identification. "
+                "VISITED SET: Both BFS and DFS require a visited set to avoid "
+                "processing the same node twice in graphs with cycles."
+            ),
+            priority=3
+        ))
+
+    @Rule(TopicQuery(name="graphs"))
+    def graphs_errors(self):
+        self.declare(TopicFact(
+            topic="graphs",
+            category="error",
+            rule_id="GRP-ERR-01",
+            description=(
+                "COMMON STUDENT ERRORS — "
+                "1. Forgetting the visited set in BFS/DFS — causes infinite loops "
+                "   in graphs with cycles. "
+                "2. Confusing BFS and DFS data structures: BFS uses a Queue (FIFO); "
+                "   DFS uses a Stack (LIFO) or recursion. "
+                "3. Assuming BFS finds the shortest path in weighted graphs — "
+                "   BFS only guarantees shortest path in UNWEIGHTED graphs. "
+                "   Use Dijkstra's algorithm for weighted graphs. "
+                "4. Confusing trees with graphs: all trees are graphs, but not all "
+                "   graphs are trees. Trees have no cycles and are fully connected."
+            ),
+            priority=4
+        ))
+
+    # =========================================================================
+    # THEORY OF COMPUTATION
+    # =========================================================================
+
+    # -------------------------------------------------------------------------
+    # AUTOMATA THEORY
+    # -------------------------------------------------------------------------
+
+    @Rule(TopicQuery(name="automata"))
+    def automata_definition(self):
+        self.declare(TopicFact(
+            topic="automata",
+            category="definition",
+            rule_id="AUT-DEF-01",
+            description=(
+                "DEFINITION — Automata Theory is the study of abstract computational "
+                "machines (automata) and the problems they can solve. "
+                "A Finite Automaton (FA) is the simplest model — a machine with a "
+                "finite number of states that reads an input string one symbol at a time "
+                "and either accepts or rejects it. "
+                "Two types exist: "
+                "DFA (Deterministic Finite Automaton): for each state and input symbol, "
+                "exactly ONE transition is defined. "
+                "NFA (Non-deterministic Finite Automaton): for each state and input symbol, "
+                "ZERO or MORE transitions may exist, including epsilon (ε) transitions "
+                "that consume no input."
+            ),
+            priority=1
+        ))
+
+    @Rule(TopicQuery(name="automata"))
+    def automata_dfa(self):
+        self.declare(TopicFact(
+            topic="automata",
+            category="property",
+            rule_id="AUT-PROP-01",
+            description=(
+                "DFA — FORMAL DEFINITION: A DFA is a 5-tuple (Q, Σ, δ, q₀, F) where: "
+                "Q = finite set of states. "
+                "Σ = finite input alphabet. "
+                "δ: Q × Σ → Q = transition function (maps state + symbol → next state). "
+                "q₀ ∈ Q = initial (start) state. "
+                "F ⊆ Q = set of accept (final) states. "
+                "A DFA accepts a string if, after reading all input symbols starting "
+                "from q₀, the machine ends in a state that belongs to F. "
+                "A DFA rejects a string if it ends in a non-accept state or if no "
+                "valid transition exists for a given symbol."
+            ),
+            priority=2
+        ))
+
+    @Rule(TopicQuery(name="automata"))
+    def automata_nfa(self):
+        self.declare(TopicFact(
+            topic="automata",
+            category="property",
+            rule_id="AUT-PROP-02",
+            description=(
+                "NFA — KEY PROPERTIES: "
+                "An NFA is also a 5-tuple (Q, Σ, δ, q₀, F) but the transition "
+                "function is δ: Q × (Σ ∪ {ε}) → P(Q), mapping to a POWER SET of states. "
+                "An NFA accepts a string if AT LEAST ONE possible computation path "
+                "ends in an accept state. "
+                "EQUIVALENCE: Every NFA can be converted to an equivalent DFA using "
+                "the subset construction algorithm. DFAs and NFAs recognise exactly "
+                "the same class of languages — the Regular Languages. "
+                "EPSILON TRANSITIONS (ε): Allow the machine to change state without "
+                "consuming any input symbol."
+            ),
+            priority=3
+        ))
+
+    @Rule(TopicQuery(name="automata"))
+    def automata_languages(self):
+        self.declare(TopicFact(
+            topic="automata",
+            category="use_case",
+            rule_id="AUT-USE-01",
+            description=(
+                "REGULAR LANGUAGES & APPLICATIONS — "
+                "Finite Automata recognise Regular Languages — the simplest class "
+                "in the Chomsky Hierarchy. "
+                "Regular Languages can also be described by Regular Expressions. "
+                "REAL-WORLD APPLICATIONS: "
+                "Lexical analysis in compilers (tokenising source code). "
+                "Pattern matching and text search (grep, regex engines). "
+                "Network protocol design (validating packet formats). "
+                "Vending machines and traffic light controllers (simple state machines). "
+                "LIMITATION: Finite Automata cannot recognise context-free languages "
+                "such as balanced parentheses — a Pushdown Automaton is required for that."
+            ),
+            priority=4
+        ))
+
+    @Rule(TopicQuery(name="automata"))
+    def automata_errors(self):
+        self.declare(TopicFact(
+            topic="automata",
+            category="error",
+            rule_id="AUT-ERR-01",
+            description=(
+                "COMMON STUDENT ERRORS — "
+                "1. Confusing DFA and NFA power: both recognise exactly the same set "
+                "   of languages (Regular Languages). NFA is NOT more powerful than DFA — "
+                "   it is only more concise to construct. "
+                "2. Assuming an NFA rejects if any path fails — an NFA ACCEPTS if "
+                "   at least one computation path reaches an accept state. "
+                "3. Forgetting that ε-transitions in an NFA consume no input — "
+                "   the machine changes state without reading a symbol. "
+                "4. Confusing the start state with an accept state — a state can be "
+                "   both the start state and an accept state simultaneously, but it "
+                "   is not automatically an accept state just because it is the start. "
+                "5. Applying Finite Automata to non-regular languages — FA cannot "
+                "   count unbounded repetitions (e.g. aⁿbⁿ requires a Pushdown Automaton)."
+            ),
+            priority=5
+        ))
+
 
 # =============================================================================
 # PUBLIC INTERFACE
@@ -810,77 +1286,139 @@ class CSKnowledgeEngine(KnowledgeEngine):
 
 TOPIC_ALIASES: dict[str, str] = {
     # Variables & Data Types
-    "variables":                "variables",
-    "variable":                 "variables",
-    "data types":               "variables",
-    "data type":                "variables",
-    "datatypes":                "variables",
-    "types":                    "variables",
+    "variables":                    "variables",
+    "variable":                     "variables",
+    "data types":                   "variables",
+    "data type":                    "variables",
+    "datatypes":                    "variables",
+    "types":                        "variables",
 
     # Control Flow
-    "control flow":             "control_flow",
-    "control_flow":             "control_flow",
-    "if else":                  "control_flow",
-    "if statement":             "control_flow",
-    "loops":                    "control_flow",
-    "for loop":                 "control_flow",
-    "while loop":               "control_flow",
-    "conditionals":             "control_flow",
+    "control flow":                 "control_flow",
+    "control_flow":                 "control_flow",
+    "if else":                      "control_flow",
+    "if statement":                 "control_flow",
+    "loops":                        "control_flow",
+    "for loop":                     "control_flow",
+    "while loop":                   "control_flow",
+    "conditionals":                 "control_flow",
 
     # Functions
-    "functions":                "functions",
-    "function":                 "functions",
-    "recursion":                "functions",
-    "recursive":                "functions",
-    "def":                      "functions",
+    "functions":                    "functions",
+    "function":                     "functions",
+    "recursion":                    "functions",
+    "recursive":                    "functions",
+    "def":                          "functions",
 
     # OOP
-    "oop":                      "oop",
-    "object oriented":          "oop",
-    "object-oriented":          "oop",
-    "classes":                  "oop",
-    "class":                    "oop",
-    "inheritance":              "oop",
-    "objects":                  "oop",
+    "oop":                          "oop",
+    "object oriented":              "oop",
+    "object-oriented":              "oop",
+    "classes":                      "oop",
+    "class":                        "oop",
+    "inheritance":                  "oop",
+    "objects":                      "oop",
+    "polymorphism":                 "oop",
+    "encapsulation":                "oop",
 
     # Lists / Arrays
-    "lists":                    "lists",
-    "list":                     "lists",
-    "arrays":                   "lists",
-    "array":                    "lists",
+    "lists":                        "lists",
+    "list":                         "lists",
+    "arrays":                       "lists",
+    "array":                        "lists",
 
     # Stacks
-    "stacks":                   "stacks",
-    "stack":                    "stacks",
+    "stacks":                       "stacks",
+    "stack":                        "stacks",
 
     # Queues
-    "queues":                   "queues",
-    "queue":                    "queues",
+    "queues":                       "queues",
+    "queue":                        "queues",
 
     # Linked Lists
-    "linked lists":             "linked_lists",
-    "linked list":              "linked_lists",
-    "linked_lists":             "linked_lists",
-    "linked_list":              "linked_lists",
-    "singly linked list":       "linked_lists",
-    "doubly linked list":       "linked_lists",
+    "linked lists":                 "linked_lists",
+    "linked list":                  "linked_lists",
+    "linked_lists":                 "linked_lists",
+    "linked_list":                  "linked_lists",
+    "singly linked list":           "linked_lists",
+    "doubly linked list":           "linked_lists",
 
     # Trees
-    "trees":                    "trees",
-    "tree":                     "trees",
-    "binary tree":              "trees",
-    "binary search tree":       "trees",
-    "bst":                      "trees",
+    "trees":                        "trees",
+    "tree":                         "trees",
+    "binary tree":                  "trees",
+    "binary search tree":           "trees",
+    "bst":                          "trees",
+    "avl tree":                     "trees",
+    "avl":                          "trees",
 
     # Hash Tables
-    "hash tables":              "hash_tables",
-    "hash table":               "hash_tables",
-    "hash_tables":              "hash_tables",
-    "hash map":                 "hash_tables",
-    "hashmap":                  "hash_tables",
-    "dictionary":               "hash_tables",
-    "dictionaries":             "hash_tables",
-    "dict":                     "hash_tables",
+    "hash tables":                  "hash_tables",
+    "hash table":                   "hash_tables",
+    "hash_tables":                  "hash_tables",
+    "hash map":                     "hash_tables",
+    "hashmap":                      "hash_tables",
+    "dictionary":                   "hash_tables",
+    "dictionaries":                 "hash_tables",
+    "dict":                         "hash_tables",
+
+    # Sorting
+    "sorting":                      "sorting",
+    "sorting algorithms":           "sorting",
+    "bubble sort":                  "sorting",
+    "merge sort":                   "sorting",
+    "quick sort":                   "sorting",
+    "bubblesort":                   "sorting",
+    "mergesort":                    "sorting",
+    "quicksort":                    "sorting",
+
+    # Searching
+    "searching":                    "searching",
+    "searching algorithms":         "searching",
+    "linear search":                "searching",
+    "binary search":                "searching",
+    "search":                       "searching",
+
+    # Big-O
+    "big o":                        "big_o",
+    "big-o":                        "big_o",
+    "big_o":                        "big_o",
+    "time complexity":              "big_o",
+    "space complexity":             "big_o",
+    "complexity":                   "big_o",
+    "complexity analysis":          "big_o",
+    "asymptotic":                   "big_o",
+    "asymptotic notation":          "big_o",
+
+    # Graphs
+    "graphs":                       "graphs",
+    "graph":                        "graphs",
+    "graph theory":                 "graphs",
+    "bfs":                          "graphs",
+    "dfs":                          "graphs",
+    "breadth first search":         "graphs",
+    "depth first search":           "graphs",
+    "breadth-first search":         "graphs",
+    "depth-first search":           "graphs",
+    "directed graph":               "graphs",
+    "undirected graph":             "graphs",
+
+    # Automata Theory
+    "automata":                     "automata",
+    "automata theory":              "automata",
+    "finite automata":              "automata",
+    "finite automaton":             "automata",
+    "dfa":                          "automata",
+    "nfa":                          "automata",
+    "deterministic finite automaton": "automata",
+    "non-deterministic finite automaton": "automata",
+    "nondeterministic finite automaton": "automata",
+    "state machine":                "automata",
+    "finite state machine":         "automata",
+    "fsm":                          "automata",
+    "regular language":             "automata",
+    "regular languages":            "automata",
+    "epsilon transition":           "automata",
 }
 
 SUPPORTED_TOPICS: list[str] = sorted(set(TOPIC_ALIASES.values()))
@@ -894,8 +1432,7 @@ def get_expert_facts(topic_name: str) -> dict:
     TopicFact assertions, and returns them as a structured dictionary.
 
     Args:
-        topic_name (str): Raw topic name from the user query
-                          (e.g., "Binary Search Tree", "oop", "linked list").
+        topic_name (str): Raw topic name from the user query.
 
     Returns:
         dict with keys:
@@ -976,7 +1513,13 @@ if __name__ == "__main__":
         "linked list",
         "binary search tree",
         "dictionary",
-        "sorting",       # Not in KB — tests graceful error handling
+        "sorting",
+        "binary search",
+        "big o",
+        "graphs",
+        "automata theory",
+        "dfa",
+        "heap sort",        # Not in KB — tests graceful error handling
     ]
 
     for topic in test_topics:

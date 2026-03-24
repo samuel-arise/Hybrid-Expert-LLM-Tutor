@@ -5,7 +5,6 @@ User Interface Layer — Streamlit Frontend
 Hybrid Expert-LLM Tutor for Accurate Self-Learning Support in Computer Science
 Author: Arise Steven Samuel
 
-Design Language — inspired by samuelarise.vercel.app:
     Background    : #0D0D0D deep black
     Accent        : #7C3AED purple (brand colour)
     Display font  : Syne — bold, heavy headings
@@ -598,7 +597,7 @@ st.markdown("""
 <div style="margin-bottom: 28px;">
     <div class="section-label">Neuro-Symbolic AI · CS Education</div>
     <div class="app-title">ARISE <span>Tutor</span></div>
-    <div class="app-tagline">Python Programming & Data Structures · Verified by Expert System</div>
+    <div class="app-tagline">Python Programming, Data Structures, Algorithms & More · Verified by Expert System</div>
 </div>
 """, unsafe_allow_html=True)
 
