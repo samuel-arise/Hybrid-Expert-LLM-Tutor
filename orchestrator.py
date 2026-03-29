@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 """
 orchestrator.py
 ===============
@@ -21,12 +22,8 @@ Architecture Role:
     The Expert System's role is strictly LOGICAL — it verifies and constrains.
     The LLM is never allowed to reason freely outside the verified facts.
 """
-
-import compat  # must be first — patches collections for Python 3.10+
-
 import os
 from dotenv import load_dotenv
-from huggingface_hub import InferenceClient
 from expert_engine import get_expert_facts, SUPPORTED_TOPICS, TOPIC_ALIASES
 
 # Load HF_TOKEN from .env file
@@ -144,7 +141,53 @@ def get_llm_response(prompt: str) -> str:
 # This is the single function that app.py calls for every student query.
 # =============================================================================
 
+# ── GREETING / CASUAL DETECTION ──────────────────────────────────────────
+CASUAL_PHRASES = {
+    "hello", "hi", "hey", "good morning", "good afternoon",
+    "good evening", "how are you", "what's up", "whats up",
+    "who are you", "what are you", "what can you do",
+    "thank you", "thanks", "bye", "goodbye", "ok", "okay",
+    "cool", "great", "nice", "sure", "please", "help"
+}
+
+def is_casual(query: str) -> bool:
+    """Returns True if the query is a greeting or casual interaction."""
+    q = query.strip().lower()
+    # Direct match
+    if q in CASUAL_PHRASES:
+        return True
+    # Short query with no CS keywords — likely casual
+    if len(q.split()) <= 3:
+        for phrase in CASUAL_PHRASES:
+            if phrase in q:
+                return True
+    return False
+
 def get_tutor_response(query: str) -> dict:
+
+    # Handle casual greetings — no badge, no Expert System
+    if is_casual(query):
+        try:
+            casual_prompt = (
+                f"You are ARISE Tutor, a friendly Computer Science tutor. "
+                f"A student said: '{query}'. "
+                f"Respond warmly and briefly. If it is a greeting, greet back and "
+                f"mention you can help with Python programming, Data Structures, "
+                f"Algorithms, and Automata Theory."
+            )
+            response = get_llm_response(casual_prompt)
+        except Exception as e:
+            response = "Hello! I am ARISE Tutor. Ask me anything about Python, Data Structures, Algorithms, or Automata Theory."
+
+        return {
+            "response":     response,
+            "topic":        "casual",
+            "expert_facts": [],
+            "facts_string": "",
+            "grounded":     None,   # None = no badge at all
+            "error":        None
+        }
+
     """
     The primary orchestration pipeline. Executes the full
     Context-Oriented Workflow described in Chapter 3, Section 3.2.

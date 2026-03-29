@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 """
 app.py
 ======
@@ -14,8 +15,6 @@ Author: Arise Steven Samuel
     Labels        : Uppercase spaced purple section labels
     Buttons       : Solid purple primary, dark outline secondary
 """
-
-import compat  # must be first — patches collections for Python 3.10+
 import streamlit as st
 from orchestrator import get_tutor_response, SUPPORTED_TOPICS
 
@@ -529,7 +528,7 @@ with st.sidebar:
     topic_html = '<div style="line-height:2.4;">'
     for topic in SUPPORTED_TOPICS:
         label = topic.replace("_", " ").title()
-        is_active = (topic == st.session_state.last_topic)
+        is_active = topic == st.session_state.last_topic
         css_class = "topic-chip topic-chip-active" if is_active else "topic-chip"
         topic_html += f'<span class="{css_class}">{label}</span>'
     topic_html += '</div>'
@@ -635,17 +634,18 @@ for msg in st.session_state.messages:
             <div class="msg-bubble-student">{content}</div>
         </div>
         """, unsafe_allow_html=True)
+        
+    if grounded is True:
+     badge_verified = '<span class="badge badge-verified">✓ Verified by Expert System</span>'
+    elif grounded is False:
+     badge_verified = '<span class="badge badge-unverified">⚠ Unverified — cross-check advised</span>'
     else:
-        badge_verified = (
-            '<span class="badge badge-verified">✓ Verified by Expert System</span>'
-            if grounded else
-            '<span class="badge badge-unverified">⚠ Unverified — cross-check advised</span>'
-        )
-        badge_topic = (
+     badge_verified = ""  # No badge for casual interactions
+    badge_topic = (
             f'<span class="badge badge-topic">{topic.replace("_", " ")}</span>'
             if topic and topic != "unknown" else ""
         )
-        st.markdown(f"""
+    st.markdown(f"""
         <div class="msg-wrapper">
             <div class="msg-role msg-role-tutor">ARISE Tutor</div>
             <div class="msg-bubble-tutor">{content}</div>
@@ -710,3 +710,4 @@ if send and user_input.strip():
     st.session_state.input_key += 1
 
     st.rerun()
+    
