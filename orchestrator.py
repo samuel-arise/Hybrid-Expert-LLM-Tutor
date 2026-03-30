@@ -180,7 +180,7 @@ def get_tutor_response(query: str) -> dict:
             response = "Hello! I am ARISE Tutor. Ask me anything about Python, Data Structures, Algorithms, or Automata Theory."
 
         return {
-           # "response":     response,
+            "response":     response,
             "topic":        "casual",
             "expert_facts": [],
             "facts_string": "",

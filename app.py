@@ -488,6 +488,9 @@ p, span, div, label, li, h1, h2, h3, h4, h5, h6,
 # SESSION STATE
 # =============================================================================
 
+if "pending_query" not in st.session_state:
+    st.session_state.pending_query = None
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -675,16 +678,25 @@ with st.form(key=f"query_form_{st.session_state.input_key}", clear_on_submit=Tru
 # =============================================================================
 
 if send and user_input.strip():
+    st.session_state.pending_query = user_input.strip()
+    st.session_state.input_key += 1
+    st.rerun()
 
-    query = user_input.strip()
+if st.session_state.get("pending_query"):
+    query = st.session_state.pending_query
+    st.session_state.pending_query = None
 
+    # Append student message
     st.session_state.messages.append({
         "role": "student",
         "content": query,
     })
 
     with st.spinner(""):
-        result = get_tutor_response(query)
+        if query is not None:
+            result = get_tutor_response(query)
+        else:
+            result = {"error": "Query is empty", "response": "", "grounded": False, "topic": "unknown", "expert_facts": []}
 
     if result["error"]:
         response_text = f"An error occurred: {result['error']}"
@@ -707,7 +719,5 @@ if send and user_input.strip():
     st.session_state.last_expert_facts = facts
     st.session_state.last_topic = topic
     st.session_state.last_grounded = grounded
-    st.session_state.input_key += 1
 
     st.rerun()
-    
