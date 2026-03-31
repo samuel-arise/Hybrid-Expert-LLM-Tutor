@@ -627,8 +627,6 @@ if not st.session_state.messages:
 for msg in st.session_state.messages:
     role = msg["role"]
     content = msg["content"]
-    grounded = msg.get("grounded", False)
-    topic = msg.get("topic", None)
 
     if role == "student":
         st.markdown(f"""
@@ -638,17 +636,24 @@ for msg in st.session_state.messages:
         </div>
         """, unsafe_allow_html=True)
         
-    if grounded is True:
-     badge_verified = '<span class="badge badge-verified">✓ Verified by Expert System</span>'
-    elif grounded is False:
-     badge_verified = '<span class="badge badge-unverified">⚠ Unverified — cross-check advised</span>'
-    else:
-     badge_verified = ""  # No badge for casual interactions
-    badge_topic = (
+    elif role == "tutor":
+        # Only extract these for the tutor to avoid KeyErrors
+        grounded = msg.get("grounded", False)
+        topic = msg.get("topic", None)
+        
+        if grounded is True:
+            badge_verified = '<span class="badge badge-verified">✓ Verified by Expert System</span>'
+        elif grounded is False:
+            badge_verified = '<span class="badge badge-unverified">⚠ Unverified — cross-check advised</span>'
+        else:
+            badge_verified = ""  # No badge for casual interactions
+            
+        badge_topic = (
             f'<span class="badge badge-topic">{topic.replace("_", " ")}</span>'
             if topic and topic != "unknown" else ""
         )
-    st.markdown(f"""
+            
+        st.markdown(f"""
         <div class="msg-wrapper">
             <div class="msg-role msg-role-tutor">ARISE Tutor</div>
             <div class="msg-bubble-tutor">{content}</div>
@@ -693,10 +698,7 @@ if st.session_state.get("pending_query"):
     })
 
     with st.spinner(""):
-        if query is not None:
-            result = get_tutor_response(query)
-        else:
-            result = {"error": "Query is empty", "response": "", "grounded": False, "topic": "unknown", "expert_facts": []}
+        result = get_tutor_response(query) # type: ignore
 
     if result["error"]:
         response_text = f"An error occurred: {result['error']}"
