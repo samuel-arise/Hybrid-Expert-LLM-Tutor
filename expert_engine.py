@@ -67,6 +67,7 @@ if not hasattr(collections, "Iterator"):
     collections.Iterator = collections.abc.Iterator
 
 from experta import Fact, KnowledgeEngine, Rule, Field
+#from experta import *  # pyright: ignore[reportWildcardImportFromLibrary]
 
 
 # =============================================================================
