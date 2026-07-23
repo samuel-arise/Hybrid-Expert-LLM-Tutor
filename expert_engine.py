@@ -66,7 +66,7 @@ if not hasattr(collections, "Iterable"):
 if not hasattr(collections, "Iterator"):
     collections.Iterator = collections.abc.Iterator
 
-from experta import *
+from experta import Fact, KnowledgeEngine, Rule, Field
 
 
 # =============================================================================
